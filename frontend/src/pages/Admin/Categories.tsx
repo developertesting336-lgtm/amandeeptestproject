@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Edit, Trash2, Plus, X, FolderTree, Image as ImageIcon, Upload, Link } from "lucide-react";
+import { API_BASE_URL } from "../../config/api";
 import "./CategoryList.css";
 
 interface Category {
@@ -50,7 +51,7 @@ const CategoryList = () => {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        "http://localhost:5000/api/admin/categories/all",
+        `${API_BASE_URL}/api/admin/categories/all`,
         {
           method: "GET",
           headers: {
@@ -132,7 +133,7 @@ const CategoryList = () => {
         formData.append("images", imageFile);
 
         response = await fetch(
-          "http://localhost:5000/api/admin/add/categories",
+          `${API_BASE_URL}/api/admin/add/categories`,
           {
             method: "POST",
             headers: {
@@ -144,7 +145,7 @@ const CategoryList = () => {
 
         if (!response.ok) {
           response = await fetch(
-            "http://localhost:5000/api/admin/add/categories",
+            `${API_BASE_URL}/api/admin/add/categories`,
             {
               method: "POST",
               headers: {
@@ -162,7 +163,7 @@ const CategoryList = () => {
         }
       } else {
         response = await fetch(
-          "http://localhost:5000/api/admin/add/categories",
+          `${API_BASE_URL}/api/admin/add/categories`,
           {
             method: "POST",
             headers: {
@@ -185,19 +186,17 @@ const CategoryList = () => {
         throw new Error(result.message || "Failed to add category");
       }
 
-      if (result.data?.category) {
-        setCategories((prev) => [result.data.category, ...prev]);
-      } else {
-        fetchCategories();
-      }
+      setCategories((prev) => [result.data.category, ...prev]);
+      fetchCategories();
 
+      setShowAddModal(false);
       setName("");
       setDescription("");
+      setImageMode("file");
       setImage("");
       setImageFile(null);
       setImageFileName("");
       setParent("");
-      setShowAddModal(false);
     } catch (err) {
       console.error("Add category error:", err);
       setModalError(
@@ -217,12 +216,14 @@ const CategoryList = () => {
     setEditImageFileName("");
     setEditImageMode(category.image ? "url" : "file");
 
-    const parentVal =
-      typeof category.parent === "object" && category.parent !== null
-        ? category.parent._id
-        : typeof category.parent === "string"
-        ? category.parent
-        : "";
+    let parentVal = "";
+    if (category.parent) {
+      if (typeof category.parent === "object" && category.parent !== null) {
+        parentVal = category.parent._id;
+      } else if (typeof category.parent === "string") {
+        parentVal = category.parent;
+      }
+    }
 
     setEditParent(parentVal);
     setEditModalError("");
@@ -253,7 +254,7 @@ const CategoryList = () => {
         formData.append("images", editImageFile);
 
         response = await fetch(
-          `http://localhost:5000/api/admin/category/${editingCategory._id}`,
+          `${API_BASE_URL}/api/admin/category/${editingCategory._id}`,
           {
             method: "PUT",
             headers: {
@@ -265,7 +266,7 @@ const CategoryList = () => {
 
         if (!response.ok) {
           response = await fetch(
-            `http://localhost:5000/api/admin/category/${editingCategory._id}`,
+            `${API_BASE_URL}/api/admin/category/${editingCategory._id}`,
             {
               method: "PUT",
               headers: {
@@ -283,7 +284,7 @@ const CategoryList = () => {
         }
       } else {
         response = await fetch(
-          `http://localhost:5000/api/admin/category/${editingCategory._id}`,
+          `${API_BASE_URL}/api/admin/category/${editingCategory._id}`,
           {
             method: "PUT",
             headers: {
@@ -340,7 +341,7 @@ const CategoryList = () => {
       const token = localStorage.getItem("token");
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/category/${categoryId}`,
+        `${API_BASE_URL}/api/admin/category/${categoryId}`,
         {
           method: "DELETE",
           headers: {
@@ -387,7 +388,7 @@ const CategoryList = () => {
     ) {
       return imageSrc;
     }
-    return `http://localhost:5000${imageSrc.startsWith("/") ? "" : "/"}${imageSrc}`;
+    return `${API_BASE_URL}${imageSrc.startsWith("/") ? "" : "/"}${imageSrc}`;
   };
 
   if (loading) {

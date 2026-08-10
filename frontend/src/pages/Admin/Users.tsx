@@ -11,7 +11,8 @@ interface UserItem {
   isActive?: boolean;
 }
 
-const API_ADMIN_USERS = "http://localhost:5000/api/admin/users";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_ADMIN_USERS = `${API_BASE_URL}/api/admin/users`;
 
 const Users = () => {
   const [users, setUsers] = useState<UserItem[]>([]);

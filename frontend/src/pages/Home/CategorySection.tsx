@@ -45,10 +45,12 @@ const CategorySection = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
 
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/categories");
+        const res = await fetch(`${API_BASE_URL}/api/categories`);
         const result = await res.json();
         const rawList = result.data || result.categories || (Array.isArray(result) ? result : []);
 
@@ -81,7 +83,7 @@ const CategorySection = () => {
         return imgStr;
       }
       const cleanPath = imgStr.replace(/\\/g, "/");
-      return `http://localhost:5000/${cleanPath.replace(/^\//, "")}`;
+      return `${API_BASE_URL}/${cleanPath.replace(/^\//, "")}`;
     }
 
     return getFallbackImage(cat.name, index);

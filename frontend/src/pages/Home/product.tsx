@@ -85,23 +85,22 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
   },
 ];
 
-const formatImageUrl = (path?: any, fallback: string = product1) => {
-  if (!path) return fallback;
-  const rawUrl = typeof path === "string" ? path : path.url;
-  if (!rawUrl || typeof rawUrl !== "string") return fallback;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+const formatImageUrl = (image: string | any | undefined): string => {
+  if (!image) return "";
+  const rawUrl = typeof image === "string" ? image : image.url;
+  if (!rawUrl) return "";
   if (
     rawUrl.startsWith("http://") ||
     rawUrl.startsWith("https://") ||
-    rawUrl.startsWith("data:") ||
-    rawUrl.startsWith("blob:") ||
-    rawUrl.startsWith("/") ||
-    rawUrl.includes("/assets/")
+    rawUrl.startsWith("data:")
   ) {
     return rawUrl;
   }
   const cleanPath = rawUrl.replace(/\\/g, "/");
   const formattedPath = cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`;
-  return `http://localhost:5000${formattedPath}`;
+  return `${API_BASE_URL}${formattedPath}`;
 };
 
 const CATEGORIES = ["All", "Electronics", "Fashion", "Toys"];
@@ -135,7 +134,7 @@ const ProductSection = () => {
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/featured");
+        const res = await fetch(`${API_BASE_URL}/api/featured`);
         const result = await res.json();
 
         const rawList =

@@ -14,7 +14,8 @@ const formatImageUrl = (image?: any, fallback: string = product1) => {
   }
   const cleanPath = rawUrl.replace(/\\/g, "/");
   const formattedPath = cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`;
-  return `http://localhost:5000${formattedPath}`;
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  return `${API_BASE_URL}${formattedPath}`;
 };
 
 const Cart = () => {

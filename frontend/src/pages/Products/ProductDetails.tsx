@@ -94,20 +94,22 @@ const ProductDetails = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
 
-        let res = await fetch(`http://localhost:5000/api/admin/product/${productId}`, {
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+        let res = await fetch(`${API_BASE_URL}/api/admin/product/${productId}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
         let result = await res.json();
         let fetchedProduct = result.data?.product || result.product || result.data;
 
         if (!res.ok || !fetchedProduct || typeof fetchedProduct !== "object" || !fetchedProduct._id) {
-          res = await fetch(`http://localhost:5000/api/products/${productId}`);
+          res = await fetch(`${API_BASE_URL}/api/products/${productId}`);
           result = await res.json();
           fetchedProduct = result.data?.product || result.product || result.data;
         }
 
         if (!res.ok || !fetchedProduct || typeof fetchedProduct !== "object" || !fetchedProduct._id) {
-          res = await fetch("http://localhost:5000/api/products");
+          res = await fetch(`${API_BASE_URL}/api/products`);
           result = await res.json();
           const list = result.data?.products || result.data || result.products || (Array.isArray(result) ? result : []);
           if (Array.isArray(list) && list.length > 0) {
@@ -186,7 +188,8 @@ const ProductDetails = () => {
     }
     const cleanPath = rawUrl.replace(/\\/g, "/");
     const formattedPath = cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`;
-    return `http://localhost:5000${formattedPath}`;
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+    return `${API_BASE_URL}${formattedPath}`;
   };
 
   if (loading) {

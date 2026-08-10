@@ -29,11 +29,12 @@ const HARDCODED_LOGOS = [
 
 const PromoBar = () => {
   const [promos, setPromos] = useState<string[]>(HARDCODED_LOGOS);
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
   useEffect(() => {
     const fetchHomeTaglines = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/hometaglines");
+        const res = await fetch(`${API_BASE_URL}/api/hometaglines`);
         const result = await res.json();
 
         if (res.ok && result.success) {
@@ -50,7 +51,7 @@ const PromoBar = () => {
                 if (!img || typeof img !== "string" || img.trim().length === 0) return null;
                 return img.startsWith("http")
                   ? img
-                  : `http://localhost:5000${img.startsWith("/") ? "" : "/"}${img}`;
+                  : `${API_BASE_URL}${img.startsWith("/") ? "" : "/"}${img}`;
               })
               .filter((img): img is string => Boolean(img));
 

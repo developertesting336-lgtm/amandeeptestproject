@@ -113,23 +113,23 @@ const FALLBACK_PRODUCTS: Product[] = [
 ];
 
 const formatImageUrl = (path?: ProductImageItem, fallback: string = "") => {
-  if (!path) return fallback;
-  let rawUrl = "";
-  if (typeof path === "string") {
-    rawUrl = path;
-  } else if (typeof path === "object" && path !== null) {
-    rawUrl = path.url || (path as any).secure_url || (path as any).path || "";
-  }
-  if (!rawUrl) return fallback;
-  if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+const formatImageUrl = (image: string | ProductImageItem | undefined): string => {
+  if (!image) return "";
+  const rawUrl = typeof image === "string" ? image : image.url;
+  if (!rawUrl) return "";
+  if (
+    rawUrl.startsWith("http://") ||
+    rawUrl.startsWith("https://") ||
+    rawUrl.startsWith("data:")
+  ) {
     return rawUrl;
   }
   const cleanPath = rawUrl.replace(/\\/g, "/");
   const formattedPath = cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`;
-  return `http://localhost:5000${formattedPath}`;
+  return `${API_BASE_URL}${formattedPath}`;
 };
-
-
 
 const UserProducts = () => {
   const navigate = useNavigate();
@@ -162,7 +162,7 @@ const UserProducts = () => {
         if (sortBy) params.append("sort", sortBy);
 
         const queryString = params.toString();
-        const url = `http://localhost:5000/api/products${queryString ? `?${queryString}` : ""}`;
+        const url = `${API_BASE_URL}/api/products${queryString ? `?${queryString}` : ""}`;
 
         let res = await fetch(url);
         let result = await res.json();
@@ -175,7 +175,7 @@ const UserProducts = () => {
 
         // If specific filtered URL returned no results or failed, fallback to base products URL
         if (!res.ok || !Array.isArray(rawProducts) || rawProducts.length === 0) {
-          const fallbackRes = await fetch("http://localhost:5000/api/products");
+          const fallbackRes = await fetch(`${API_BASE_URL}/api/products`);
           const fallbackResult = await fallbackRes.json();
           rawProducts =
             fallbackResult.data?.products ||

@@ -17,14 +17,11 @@ interface Product {
   numReviews?: number;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 const formatImageUrl = (path?: any, fallback: string = product1) => {
   if (!path) return fallback;
-  let rawUrl = "";
-  if (typeof path === "string") {
-    rawUrl = path;
-  } else if (typeof path === "object" && path !== null) {
-    rawUrl = path.url || path.secure_url || path.path || "";
-  }
+  const rawUrl = typeof path === "string" ? path : (path.url || path.secure_url || path.path || "");
   if (!rawUrl || typeof rawUrl !== "string") return fallback;
   if (
     rawUrl.startsWith("http://") ||
@@ -38,7 +35,7 @@ const formatImageUrl = (path?: any, fallback: string = product1) => {
   }
   const cleanPath = rawUrl.replace(/\\/g, "/");
   const formattedPath = cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`;
-  return `http://localhost:5000${formattedPath}`;
+  return `${API_BASE_URL}${formattedPath}`;
 };
 
 
@@ -53,7 +50,7 @@ const HomeProductsGrid = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const res = await fetch("http://localhost:5000/api/products");
+        const res = await fetch(`${API_BASE_URL}/api/products`);
         const result = await res.json();
         const list = result.data?.products || result.data || result.products || (Array.isArray(result) ? result : []);
 

@@ -19,7 +19,8 @@ interface Order {
   createdAt: string;
 }
 
-const API_ADMIN_ORDERS = "http://localhost:5000/api/admin/orders";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_ADMIN_ORDERS = `${API_BASE_URL}/api/admin/orders`;
 
 const Orders = () => {
   const [orders, setOrders] = useState<Order[]>([]);

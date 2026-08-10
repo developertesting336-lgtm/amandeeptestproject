@@ -30,16 +30,22 @@ interface Product {
   updatedAt: string;
 }
 
-const formatImageUrl = (image: ProductImageItem | undefined): string => {
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+const formatImageUrl = (image: string | ProductImageItem | undefined): string => {
   if (!image) return "";
   const rawUrl = typeof image === "string" ? image : image.url;
   if (!rawUrl) return "";
-  if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
+  if (
+    rawUrl.startsWith("http://") ||
+    rawUrl.startsWith("https://") ||
+    rawUrl.startsWith("data:")
+  ) {
     return rawUrl;
   }
   const cleanPath = rawUrl.replace(/\\/g, "/");
   const formattedPath = cleanPath.startsWith("/") ? cleanPath : `/${cleanPath}`;
-  return `http://localhost:5000${formattedPath}`;
+  return `${API_BASE_URL}${formattedPath}`;
 };
 
 interface Pagination {
@@ -59,7 +65,7 @@ interface ProductsResponse {
   };
 }
 
-const API_URL = "http://localhost:5000/api/admin/all/products";
+const API_URL = `${API_BASE_URL}/api/admin/all/products`;
 
 const ProductList = () => {
   const [products, setProducts] = useState<Product[]>([]);

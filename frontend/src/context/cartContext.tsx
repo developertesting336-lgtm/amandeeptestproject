@@ -38,7 +38,8 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const API_CART = "http://localhost:5000/api/cart";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_CART = `${API_BASE_URL}/api/cart`;
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const { token, isAuthenticated } = useAuth();
