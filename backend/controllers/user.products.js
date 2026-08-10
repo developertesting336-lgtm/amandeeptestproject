@@ -1,0 +1,369 @@
+
+import Product from "../models/Product.js";
+import Category from "../models/Category.js";
+
+
+// =====================================================
+// GET PRODUCTS
+// GET /api/products
+// =====================================================
+
+export const getProducts = async (req, res) => {
+  try {
+    const {
+      search,
+      category,
+      subcategory,
+      brand,
+      minPrice,
+      maxPrice,
+      stock,
+      sort = "newest",
+      page = 1,
+      limit = 12,
+    } = req.query;
+
+
+    // =================================================
+    // BASE FILTER
+    // =================================================
+
+    const filter = {
+      isActive: true,
+    };
+
+
+    // =================================================
+    // SEARCH
+    // =================================================
+
+    if (search && search.trim()) {
+      const searchValue = search.trim();
+
+      filter.$or = [
+        {
+          name: {
+            $regex: searchValue,
+            $options: "i",
+          },
+        },
+        {
+          brand: {
+            $regex: searchValue,
+            $options: "i",
+          },
+        },
+        {
+          sku: {
+            $regex: searchValue,
+            $options: "i",
+          },
+        },
+        {
+          short_description: {
+            $regex: searchValue,
+            $options: "i",
+          },
+        },
+      ];
+    }
+
+
+    // =================================================
+    // CATEGORY
+    // =================================================
+
+    if (category) {
+      const categoryDoc = await Category.findOne({
+        _id: category,
+        parent: null,
+        isActive: true,
+      }).select("_id");
+
+      if (!categoryDoc) {
+        return res.status(404).json({
+          success: false,
+          message: "Category not found",
+        });
+      }
+
+      filter.category = categoryDoc._id;
+    }
+
+
+    // =================================================
+    // SUBCATEGORY
+    // =================================================
+
+    if (subcategory) {
+      const subcategoryDoc = await Category.findOne({
+        _id: subcategory,
+        parent: { $ne: null },
+        isActive: true,
+      }).select("_id parent");
+
+      if (!subcategoryDoc) {
+        return res.status(404).json({
+          success: false,
+          message: "Subcategory not found",
+        });
+      }
+
+      // If category is also selected, make sure
+      // subcategory belongs to that category.
+      if (
+        filter.category &&
+        String(subcategoryDoc.parent) !==
+        String(filter.category)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Selected subcategory does not belong to the selected category",
+        });
+      }
+
+      filter.subcategory = subcategoryDoc._id;
+    }
+
+
+    // =================================================
+    // BRAND
+    // =================================================
+
+    if (brand && brand.trim()) {
+      filter.brand = {
+        $regex: brand.trim(),
+        $options: "i",
+      };
+    }
+
+
+    // =================================================
+    // PRICE FILTER
+    // =================================================
+
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      filter.price = {};
+
+      if (minPrice !== undefined && minPrice !== "") {
+        const minimum = Number(minPrice);
+
+        if (isNaN(minimum) || minimum < 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid minimum price",
+          });
+        }
+
+        filter.price.$gte = minimum;
+      }
+
+      if (maxPrice !== undefined && maxPrice !== "") {
+        const maximum = Number(maxPrice);
+
+        if (isNaN(maximum) || maximum < 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid maximum price",
+          });
+        }
+
+        filter.price.$lte = maximum;
+      }
+
+      // Make sure minPrice is not greater than maxPrice
+      if (
+        filter.price.$gte !== undefined &&
+        filter.price.$lte !== undefined &&
+        filter.price.$gte > filter.price.$lte
+      ) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Minimum price cannot be greater than maximum price",
+        });
+      }
+    }
+
+
+    // =================================================
+    // STOCK FILTER
+    // =================================================
+
+    if (stock === "inStock") {
+      filter.stock = {
+        $gt: 0,
+      };
+    }
+
+    if (stock === "outOfStock") {
+      filter.stock = 0;
+    }
+
+
+    // =================================================
+    // SORTING
+    // =================================================
+
+    let sortOption = {};
+
+    switch (sort) {
+      case "price_asc":
+        sortOption = {
+          price: 1,
+        };
+        break;
+
+      case "price_desc":
+        sortOption = {
+          price: -1,
+        };
+        break;
+
+      case "name_asc":
+        sortOption = {
+          name: 1,
+        };
+        break;
+
+      case "name_desc":
+        sortOption = {
+          name: -1,
+        };
+        break;
+
+      case "oldest":
+        sortOption = {
+          createdAt: 1,
+        };
+        break;
+
+      case "newest":
+      default:
+        sortOption = {
+          createdAt: -1,
+        };
+        break;
+    }
+
+
+    // =================================================
+    // PAGINATION
+    // =================================================
+
+    let currentPage = Number(page);
+    let perPage = Number(limit);
+
+    if (
+      !Number.isInteger(currentPage) ||
+      currentPage < 1
+    ) {
+      currentPage = 1;
+    }
+
+    if (
+      !Number.isInteger(perPage) ||
+      perPage < 1
+    ) {
+      perPage = 12;
+    }
+
+    // Prevent very large requests
+    if (perPage > 100) {
+      perPage = 100;
+    }
+
+    const skip =
+      (currentPage - 1) * perPage;
+
+
+    // =================================================
+    // QUERY
+    // =================================================
+
+    const [products, totalProducts] =
+      await Promise.all([
+        Product.find(filter)
+          .select(
+            [
+              "name",
+              "short_description",
+              "price",
+              "salePrice",
+              "images",
+              "brand",
+              "stock",
+              "sku",
+              "highlights",
+              "category",
+              "subcategory",
+              "isFeatured",
+              "createdAt",
+            ].join(" ")
+          )
+          .populate(
+            "category",
+            "name"
+          )
+          .populate(
+            "subcategory",
+            "name"
+          )
+          .sort(sortOption)
+          .skip(skip)
+          .limit(perPage)
+          .lean(),
+
+        Product.countDocuments(filter),
+      ]);
+
+
+    // =================================================
+    // PAGINATION INFORMATION
+    // =================================================
+
+    const totalPages = Math.ceil(
+      totalProducts / perPage
+    );
+
+
+    // =================================================
+    // RESPONSE
+    // =================================================
+
+    return res.status(200).json({
+      success: true,
+
+      data: {
+        products,
+
+        pagination: {
+          currentPage,
+          perPage,
+          totalProducts,
+          totalPages,
+
+          hasNextPage:
+            currentPage < totalPages,
+
+          hasPreviousPage:
+            currentPage > 1,
+        },
+      },
+    });
+
+  } catch (error) {
+    console.error(
+      "Get Products Error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch products",
+      error: error.message,
+    });
+  }
+};
+

@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+/* =====================================================
+   TESTIMONIALS & REVIEWS SECTION
+===================================================== */
+.testimonials-section {
+  width: 100%;
+  padding: 70px 5% 85px;
+  background-color: #0e1a13;
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+}
+
+.testimonials-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.testimonials-header {
+  text-align: center;
+  margin-bottom: 45px;
+}
+
+.testimonials-eyebrow {
+  color: #e08a52;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.testimonials-title {
+  margin: 8px 0 0;
+  color: #f4efe1;
+  font-family: 'Fraunces', serif;
+  font-size: 36px;
+  font-weight: 600;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.testimonial-card {
+  background: #17251c;
+  border: 1px solid #2c3d30;
+  border-radius: 8px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  border-color: #d9a256;
+}
+
+.testimonial-quote {
+  color: #c3cfc4;
+  font-size: 14.5px;
+  line-height: 1.6;
+  margin: 0;
+  font-style: italic;
+}
+
+.testimonial-author-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid #26362b;
+  padding-top: 16px;
+}
+
+.testimonial-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #d9a256;
+  color: #12211a;
+  font-size: 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.testimonial-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.testimonial-name {
+  color: #f4efe1;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.testimonial-role {
+  color: #7fae8a;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

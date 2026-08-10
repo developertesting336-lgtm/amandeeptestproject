@@ -1,0 +1,135 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import "./CategorySection.css";
+
+import electronicsImg from "../../assets/categories_products/electronic.png";
+import clothImg from "../../assets/categories_products/fashion.png";
+import toyImg from "../../assets/categories_products/toys.png";
+import grosaryImg from "../../assets/categories_products/groccery.png";
+
+interface Category {
+  _id: string;
+  name: string;
+  slug?: string;
+  description?: string;
+  image?: string;
+}
+
+const FALLBACK_CATEGORIES: Category[] = [
+  { _id: "c1", name: "Electronics", slug: "electronics", image: electronicsImg },
+  { _id: "c2", name: "Fashion & Apparel", slug: "fashion", image: clothImg },
+  { _id: "c3", name: "Grocery & Essentials", slug: "grocery", image: grosaryImg },
+  { _id: "c4", name: "Toys & Games", slug: "toys", image: toyImg },
+];
+
+const getFallbackImage = (name: string, index: number) => {
+  const nameLower = (name || "").toLowerCase();
+  if (nameLower.includes("electr") || nameLower.includes("phone") || nameLower.includes("gadget")) {
+    return electronicsImg;
+  }
+  if (nameLower.includes("cloth") || nameLower.includes("fash") || nameLower.includes("shirt") || nameLower.includes("wear")) {
+    return clothImg;
+  }
+  if (nameLower.includes("gros") || nameLower.includes("food") || nameLower.includes("groc") || nameLower.includes("living") || nameLower.includes("home")) {
+    return grosaryImg;
+  }
+  if (nameLower.includes("toy") || nameLower.includes("game") || nameLower.includes("kid")) {
+    return toyImg;
+  }
+  const fallbacks = [electronicsImg, clothImg, grosaryImg, toyImg];
+  return fallbacks[index % fallbacks.length];
+};
+
+const CategorySection = () => {
+  const navigate = useNavigate();
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/categories");
+        const result = await res.json();
+        const rawList = result.data || result.categories || (Array.isArray(result) ? result : []);
+
+        if (res.ok && Array.isArray(rawList) && rawList.length > 0) {
+          setCategories(rawList);
+        }
+      } catch (err) {
+        console.log("Using fallback categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  const handleCategoryClick = (categoryName: string) => {
+    navigate(`/products?category=${encodeURIComponent(categoryName)}`);
+  };
+
+  const getCategoryImage = (cat: Category, index: number) => {
+    if (cat.image && typeof cat.image === "string" && cat.image.trim().length > 0) {
+      const imgStr = cat.image.trim();
+      if (
+        imgStr.startsWith("http://") ||
+        imgStr.startsWith("https://") ||
+        imgStr.startsWith("data:") ||
+        imgStr.startsWith("blob:") ||
+        imgStr.startsWith("/") ||
+        imgStr.includes("/assets/")
+      ) {
+        return imgStr;
+      }
+      const cleanPath = imgStr.replace(/\\/g, "/");
+      return `http://localhost:5000/${cleanPath.replace(/^\//, "")}`;
+    }
+
+    return getFallbackImage(cat.name, index);
+  };
+
+  return (
+    <section className="category-section">
+      <div className="category-container">
+        <div className="category-section-header">
+          <div>
+            <span className="category-eyebrow">CURATED COLLECTIONS</span>
+            <h2 className="category-title">Shop by Category</h2>
+          </div>
+        </div>
+
+        <div className="category-grid">
+          {categories.map((cat, index) => {
+            const img = getCategoryImage(cat, index);
+            return (
+              <div
+                key={cat._id || index}
+                className="category-card"
+                onClick={() => handleCategoryClick(cat.name)}
+              >
+                <img
+                  src={img}
+                  alt={cat.name}
+                  className="category-card-bg"
+                  onError={(e) => {
+                    const target = e.currentTarget;
+                    target.onerror = null;
+                    target.src = getFallbackImage(cat.name, index);
+                  }}
+                />
+                <div className="category-card-overlay">
+                  <h3 className="category-card-name">{cat.name}</h3>
+                  <span className="category-card-count">
+                    Explore Collection <ArrowRight size={14} />
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default CategorySection;
+

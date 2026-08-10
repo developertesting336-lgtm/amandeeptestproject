@@ -1,0 +1,142 @@
+.video-section {
+  width: 100%;
+  padding: 30px 5% 35px;
+  background-color: #ffffff;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  box-sizing: border-box;
+  border-top: 1px solid #f1f5f9;
+}
+
+.video-section-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.video-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 36px;
+}
+
+.video-container.reverse {
+  flex-direction: row;
+}
+
+.video-content {
+  flex: 1;
+}
+
+.video-tag {
+  display: inline-block;
+  background: #2563eb;
+  color: #ffffff;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.video-content h2 {
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 0 0 12px;
+  color: #0f172a;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+
+.video-content p {
+  font-size: 13.5px;
+  color: #475569;
+  line-height: 1.6;
+  max-width: 440px;
+  margin-bottom: 20px;
+}
+
+.video-content button {
+  padding: 10px 24px;
+  border: none;
+  background: #0f172a;
+  color: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+}
+
+.video-content button:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+.video-card {
+  width: 420px;
+  height: 260px;
+  max-width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e2e8f0;
+  background: #0f172a;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.video-card:hover {
+  transform: translateY(-3px);
+  border-color: #2563eb;
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
+}
+
+.video-card video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+
+.video-card:hover video {
+  transform: scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .video-container,
+  .video-container.reverse {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .video-container.reverse .video-card {
+    order: 1;
+  }
+
+  .video-container.reverse .video-content {
+    order: 2;
+  }
+
+  .video-card {
+    width: 100%;
+    height: 230px;
+  }
+
+  .video-content p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

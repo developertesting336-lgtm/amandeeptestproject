@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+
+/* =====================================================
+   NEWSLETTER SUBSCRIPTION SECTION
+===================================================== */
+.newsletter-section {
+  width: 100%;
+  padding: 60px 5% 80px;
+  background-color: #12211a;
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+}
+
+.newsletter-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #17251c 0%, #0e1a13 100%);
+  border: 1px solid #3a4a3e;
+  border-radius: 12px;
+  padding: 50px 40px;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+.newsletter-eyebrow {
+  color: #e08a52;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.newsletter-title {
+  margin: 10px 0 12px;
+  color: #f4efe1;
+  font-family: 'Fraunces', serif;
+  font-size: 32px;
+  font-weight: 600;
+}
+
+.newsletter-desc {
+  color: #9fae9f;
+  font-size: 14.5px;
+  max-width: 540px;
+  margin: 0 auto 30px;
+  line-height: 1.6;
+}
+
+.newsletter-form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.newsletter-input {
+  flex: 1;
+  height: 48px;
+  padding: 0 16px;
+  background: #0e1a13;
+  border: 1px solid #2c3d30;
+  border-radius: 5px;
+  color: #ece6d6;
+  font-size: 14px;
+  outline: none;
+}
+
+.newsletter-input:focus {
+  border-color: #8c5815;
+}
+
+.newsletter-btn {
+  height: 48px;
+  padding: 0 24px;
+  background: #8c5815;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(140, 91, 29, 0.35);
+}
+
+.newsletter-btn:hover {
+  background: #683d0a;
+  box-shadow: 0 6px 20px rgba(104, 61, 10, 0.45);
+  transform: translateY(-1px);
+}
+
+.newsletter-perks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+  margin-top: 25px;
+  color: #7fae8a;
+  font-size: 12.5px;
+}
+
+@media (max-width: 600px) {
+  .newsletter-form {
+    flex-direction: column;
+  }
+  .newsletter-input, .newsletter-btn {
+    width: 100%;
+  }
+}
