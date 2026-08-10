@@ -87,14 +87,17 @@ const FALLBACK_PRODUCTS: DisplayProduct[] = [
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
-const formatImageUrl = (image: string | any | undefined): string => {
-  if (!image) return "";
-  const rawUrl = typeof image === "string" ? image : image.url;
-  if (!rawUrl) return "";
+const formatImageUrl = (image: any, fallback: string = product1): string => {
+  if (!image) return fallback;
+  const rawUrl = typeof image === "string" ? image : (image?.url || image?.secure_url || image?.path || "");
+  if (!rawUrl || typeof rawUrl !== "string") return fallback;
   if (
     rawUrl.startsWith("http://") ||
     rawUrl.startsWith("https://") ||
-    rawUrl.startsWith("data:")
+    rawUrl.startsWith("data:") ||
+    rawUrl.startsWith("blob:") ||
+    rawUrl.startsWith("/") ||
+    rawUrl.includes("/assets/")
   ) {
     return rawUrl;
   }
