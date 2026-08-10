@@ -40,7 +40,7 @@ const FALLBACK_PRODUCTS: Product[] = [
     salePrice: 59.99,
     sku: "AUD-001",
     stock: 25,
-    category: { _id: "c1", name: "Electronics", slug: "electronics" },
+    category: { _id: "c1", name: "Electronics" },
     brand: "SoundMaster",
     images: [product1],
     isFeatured: true,
@@ -53,7 +53,7 @@ const FALLBACK_PRODUCTS: Product[] = [
     salePrice: 19.99,
     sku: "FAS-002",
     stock: 50,
-    category: { _id: "c2", name: "Fashion", slug: "fashion" },
+    category: { _id: "c2", name: "Fashion" },
     brand: "UrbanWear",
     images: [product2],
     isFeatured: false,
@@ -66,7 +66,7 @@ const FALLBACK_PRODUCTS: Product[] = [
     salePrice: 79.99,
     sku: "TEC-003",
     stock: 12,
-    category: { _id: "c1", name: "Electronics", slug: "electronics" },
+    category: { _id: "c1", name: "Electronics" },
     brand: "PulseTech",
     images: [product3],
     isFeatured: true,
@@ -79,7 +79,7 @@ const FALLBACK_PRODUCTS: Product[] = [
     salePrice: 24.99,
     sku: "TOY-004",
     stock: 40,
-    category: { _id: "c3", name: "Toys & Games", slug: "toys" },
+    category: { _id: "c3", name: "Toys & Games" },
     brand: "PlayBlocks",
     images: [toyImg],
     isFeatured: false,
@@ -92,7 +92,7 @@ const FALLBACK_PRODUCTS: Product[] = [
     salePrice: 39.99,
     sku: "AUD-005",
     stock: 18,
-    category: { _id: "c1", name: "Electronics", slug: "electronics" },
+    category: { _id: "c1", name: "Electronics" },
     brand: "SoundMaster",
     images: [electronicsImg],
     isFeatured: true,
@@ -105,24 +105,26 @@ const FALLBACK_PRODUCTS: Product[] = [
     salePrice: 44.99,
     sku: "FAS-006",
     stock: 30,
-    category: { _id: "c2", name: "Fashion", slug: "fashion" },
+    category: { _id: "c2", name: "Fashion" },
     brand: "UrbanWear",
     images: [clothImg],
     isFeatured: false,
   },
 ];
 
-const formatImageUrl = (path?: ProductImageItem, fallback: string = "") => {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
-const formatImageUrl = (image: string | ProductImageItem | undefined): string => {
-  if (!image) return "";
-  const rawUrl = typeof image === "string" ? image : image.url;
-  if (!rawUrl) return "";
+const formatImageUrl = (path?: ProductImageItem, fallback: string = product1): string => {
+  if (!path) return fallback;
+  const rawUrl = typeof path === "string" ? path : (path.url || (path as any).secure_url || (path as any).path || "");
+  if (!rawUrl || typeof rawUrl !== "string") return fallback;
   if (
     rawUrl.startsWith("http://") ||
     rawUrl.startsWith("https://") ||
-    rawUrl.startsWith("data:")
+    rawUrl.startsWith("data:") ||
+    rawUrl.startsWith("blob:") ||
+    rawUrl.startsWith("/") ||
+    rawUrl.includes("/assets/")
   ) {
     return rawUrl;
   }
