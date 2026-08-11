@@ -169,7 +169,7 @@
 
 .product-card:hover {
   transform: translateY(-5px);
-  border-color: #2563eb;
+  border-color: #f2f3f5;
   box-shadow: 0 14px 28px rgba(37, 99, 235, 0.12);
 }
 
@@ -335,7 +335,7 @@
 }
 
 .product-inline-cart-btn:hover {
-  background-color: #2563eb;
+  /* background-color: #2563eb; */
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }

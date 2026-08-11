@@ -6,7 +6,7 @@
 .category-section {
   width: 100%;
   padding: 20px 5% 60px;
-  background-color: #ffffff;
+  background-color: #f6f5f9;
   font-family: 'Inter', sans-serif;
   box-sizing: border-box;
 }
@@ -64,8 +64,8 @@
 
 .category-card:hover {
   transform: translateY(-5px);
-  border-color: #2563eb;
-  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.12);
+  border-color: #e9eaeb;
+  box-shadow: 0 16px 30px rgba(248, 248, 248, 0.12);
 }
 
 .category-card-bg {

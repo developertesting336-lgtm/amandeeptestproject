@@ -176,8 +176,8 @@ const ProductSection = () => {
   const filteredProducts = activeCategory === "All"
     ? allProducts
     : allProducts.filter(
-        (p) => p.category.toLowerCase() === activeCategory.toLowerCase()
-      );
+      (p) => p.category.toLowerCase() === activeCategory.toLowerCase()
+    );
 
   const displayList = filteredProducts.length > 0 ? filteredProducts : allProducts;
   const maxIndex = Math.max(0, displayList.length - cardsPerView);
@@ -291,8 +291,8 @@ const ProductSection = () => {
                 const discount =
                   product.oldPrice > product.price
                     ? Math.round(
-                        ((product.oldPrice - product.price) / product.oldPrice) * 100
-                      )
+                      ((product.oldPrice - product.price) / product.oldPrice) * 100
+                    )
                     : 0;
 
                 const isWishlisted = !!wishlist[product.id];

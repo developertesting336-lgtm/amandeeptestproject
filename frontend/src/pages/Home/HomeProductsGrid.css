@@ -90,7 +90,7 @@
 
 .home-product-card:hover {
   transform: translateY(-4px);
-  border-color: #2563eb;
+  /* border-color: #2563eb; */
   box-shadow: 0 12px 25px rgba(37, 99, 235, 0.12);
 }
 
@@ -247,7 +247,7 @@
 
 .home-product-add-btn:hover {
   background: #2563eb;
-  border-color: #2563eb;
+  /* border-color: #2563eb; */
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
   transform: translateY(-1px);
@@ -325,7 +325,7 @@
 }
 
 .home-explore-main-btn:hover {
-  background: #2563eb;
+  /* background: #2563eb; */
   box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
   transform: translateY(-2px);
 }
