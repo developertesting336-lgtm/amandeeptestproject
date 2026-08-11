@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import User from "../models/user.js";
 
 
 const generateToken = (userId) => {
@@ -27,7 +27,7 @@ export const registerUser = async (req, res) => {
       });
     }
 
-   
+
     const existingUser = await User.findOne({
       email: email.toLowerCase(),
     });
@@ -126,16 +126,16 @@ export const loginUser = async (req, res) => {
     const token = generateToken(user._id);
 
     return res.status(200).json({
-  success: true,
-  message: "Login successful",
-  token,
-  user: {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  },
-});
+      success: true,
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
     console.error("Login Error:", error);
 
