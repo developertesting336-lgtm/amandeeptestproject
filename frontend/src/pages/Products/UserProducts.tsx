@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Search, ShoppingCart, Sparkles } from "lucide-react";
+import { Search, ShoppingCart, Filter, ArrowUpDown, Check, RotateCcw } from "lucide-react";
 import { useCart } from "../../context/cartContext";
 import Footer from "../Home/footersection";
 import "./UserProducts.css";
@@ -30,6 +30,23 @@ interface Product {
   images: ProductImageItem[];
   isFeatured: boolean;
 }
+
+const CATEGORIES = [
+  { id: "all", label: "All Categories" },
+  { id: "electronics", label: "Electronics" },
+  { id: "fashion", label: "Fashion" },
+  { id: "home-living", label: "Home & Living" },
+  { id: "sports-outdoors", label: "Sports & Outdoors" },
+  { id: "beauty-health", label: "Beauty & Health" },
+  { id: "toys", label: "Toys & Games" },
+];
+
+const SORT_OPTIONS = [
+  { id: "featured", label: "Featured" },
+  { id: "price-low", label: "Price: Low to High" },
+  { id: "price-high", label: "Price: High to Low" },
+  { id: "name", label: "Name: A to Z" },
+];
 
 const FALLBACK_PRODUCTS: Product[] = [
   {
@@ -242,129 +259,178 @@ const UserProducts = () => {
     addToCart(productId, 1);
   };
 
+  const handleResetFilters = () => {
+    setSelectedCategory("all");
+    setSearchQuery("");
+    setSortBy("featured");
+  };
+
+  const isFiltered = selectedCategory !== "all" || searchQuery.trim() !== "" || sortBy !== "featured";
+
   return (
     <div className="user-products-page">
       <main className="user-products-container">
-        {/* HEADER */}
-        <section className="user-products-header">
-          <span className="user-products-eyebrow">
-            <Sparkles size={14} strokeWidth={2.5} />
-            OUR COLLECTION
-          </span>
-          <h1 className="user-products-title">Discover Our Products</h1>
-          <p className="user-products-subtitle">
-            Explore authentic, high-quality products curated across electronics, fashion, toys and everyday essentials.
-          </p>
-        </section>
 
-        {/* TOOLBAR */}
-        <div className="user-products-toolbar">
-          <div className="user-products-search">
-            <Search size={18} />
-            <input
-              type="text"
-              placeholder="Search products, brands or keywords..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+        <div className="user-products-layout">
 
-          <div className="user-products-filters">
-            <select
-              className="user-products-select"
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-            >
-              <option value="all">All Categories</option>
-              <option value="electronics">Electronics</option>
-              <option value="fashion">Fashion</option>
-              <option value="home-living">Home & Living</option>
-              <option value="sports-outdoors">Sports & Outdoors</option>
-              <option value="beauty-health">Beauty & Health</option>
-              <option value="toys">Toys & Games</option>
-            </select>
 
-            <select
-              className="user-products-select"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              <option value="featured">Sort by: Featured</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="name">Name: A to Z</option>
-            </select>
-          </div>
-        </div>
+          <aside className="user-products-sidebar">
 
-        {/* PRODUCTS GRID */}
-        <div className="user-products-grid">
-          {loading ? (
-            <div className="user-products-loading">
-              <p>Loading products catalog...</p>
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="user-products-empty">
-              <h3>No products found</h3>
-              <p>Try resetting your search query or selected category filter.</p>
-            </div>
-          ) : (
-            filteredProducts.map((product) => {
-              const currentPrice = product.salePrice ? product.salePrice : product.price;
-              const hasDiscount = product.salePrice && product.salePrice < product.price;
-              const discountPercent = hasDiscount
-                ? Math.round(((product.price - product.salePrice!) / product.price) * 100)
-                : 0;
 
-              const imageUrl = formatImageUrl(product.images?.[0], product1);
-
-              return (
-                <article
-                  key={product._id}
-                  className="user-product-card"
-                  onClick={() => navigate(`/product/${product._id}`)}
-                >
-                  <div className="user-product-image-wrapper">
-                    <img
-                      src={imageUrl}
-                      alt={product.name}
-                      className="user-product-image"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = product1;
-                      }}
-                    />
-
-                    {discountPercent > 0 && (
-                      <span className="user-product-badge">-{discountPercent}%</span>
-                    )}
-
+            <div className="sidebar-block">
+              <div className="sidebar-block-header">
+                <Filter size={18} />
+                <h3>Categories</h3>
+              </div>
+              <div className="category-list">
+                {CATEGORIES.map((cat) => {
+                  const isActive = selectedCategory.toLowerCase() === cat.id.toLowerCase();
+                  return (
                     <button
-                      className="user-product-cart-btn"
-                      onClick={(e) => handleAddToCart(e, product._id)}
-                      aria-label="Add to cart"
+                      key={cat.id}
+                      type="button"
+                      className={`category-item ${isActive ? "active" : ""}`}
+                      onClick={() => setSelectedCategory(cat.id)}
                     >
-                      <ShoppingCart size={17} strokeWidth={2} />
+                      <span>{cat.label}</span>
+                      {isActive && <Check size={16} className="active-icon" />}
                     </button>
-                  </div>
+                  );
+                })}
+              </div>
+            </div>
 
-                  <div className="user-product-body">
-                    <span className="user-product-category">
-                      {typeof product.category === "object" ? product.category?.name || "General" : product.category || "General"}
-                    </span>
 
-                    <h3 className="user-product-title">{product.name}</h3>
+            <div className="sidebar-block">
+              <div className="sidebar-block-header">
+                <ArrowUpDown size={18} />
+                <h3>Sort By</h3>
+              </div>
+              <div className="sort-list">
+                {SORT_OPTIONS.map((option) => {
+                  const isActive = sortBy === option.id;
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      className={`sort-item ${isActive ? "active" : ""}`}
+                      onClick={() => setSortBy(option.id)}
+                    >
+                      <span>{option.label}</span>
+                      {isActive && <Check size={16} className="active-icon" />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-                    <div className="user-product-footer">
-                      <span className="user-product-price">₹{currentPrice.toLocaleString("en-IN")}</span>
-                      {hasDiscount && (
-                        <span className="user-product-old-price">₹{product.price.toLocaleString("en-IN")}</span>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              );
-            })
-          )}
+            {/* RESET BUTTON */}
+            {isFiltered && (
+              <button
+                type="button"
+                className="reset-filters-btn"
+                onClick={handleResetFilters}
+              >
+                <RotateCcw size={15} />
+                <span>Reset Filters</span>
+              </button>
+            )}
+          </aside>
+
+          {/* RIGHT MAIN SECTION: SEARCH & PRODUCT RESULTS */}
+          <section className="user-products-content">
+
+            {/* RIGHT SIDE SEARCH & RESULTS TOOLBAR */}
+            <div className="content-toolbar">
+              <div className="user-products-search">
+                <Search size={18} />
+                <input
+                  type="text"
+                  placeholder="Search products, brands or keywords..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+
+              <div className="results-count">
+                <span>{filteredProducts.length} {filteredProducts.length === 1 ? "Product" : "Products"} Found</span>
+              </div>
+            </div>
+
+            {/* PRODUCTS GRID */}
+            <div className="user-products-grid">
+              {loading ? (
+                <div className="user-products-loading">
+                  <p>Loading products catalog...</p>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="user-products-empty">
+                  <h3>No products found</h3>
+                  <p>Try resetting your search query or selected category filter.</p>
+                  <button className="reset-empty-btn" onClick={handleResetFilters}>
+                    Clear All Filters
+                  </button>
+                </div>
+              ) : (
+                filteredProducts.map((product) => {
+                  const currentPrice = product.salePrice ? product.salePrice : product.price;
+                  const hasDiscount = product.salePrice && product.salePrice < product.price;
+                  const discountPercent = hasDiscount
+                    ? Math.round(((product.price - product.salePrice!) / product.price) * 100)
+                    : 0;
+
+                  const imageUrl = formatImageUrl(product.images?.[0], product1);
+
+                  return (
+                    <article
+                      key={product._id}
+                      className="user-product-card"
+                      onClick={() => navigate(`/product/${product._id}`)}
+                    >
+                      <div className="user-product-image-wrapper">
+                        <img
+                          src={imageUrl}
+                          alt={product.name}
+                          className="user-product-image"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = product1;
+                          }}
+                        />
+
+                        {discountPercent > 0 && (
+                          <span className="user-product-badge">-{discountPercent}%</span>
+                        )}
+
+                        <button
+                          className="user-product-cart-btn"
+                          onClick={(e) => handleAddToCart(e, product._id)}
+                          aria-label="Add to cart"
+                        >
+                          <ShoppingCart size={17} strokeWidth={2} />
+                        </button>
+                      </div>
+
+                      <div className="user-product-body">
+                        <span className="user-product-category">
+                          {typeof product.category === "object" ? product.category?.name || "General" : product.category || "General"}
+                        </span>
+
+                        <h3 className="user-product-title">{product.name}</h3>
+
+                        <div className="user-product-footer">
+                          <span className="user-product-price">₹{currentPrice.toLocaleString("en-IN")}</span>
+                          {hasDiscount && (
+                            <span className="user-product-old-price">₹{product.price.toLocaleString("en-IN")}</span>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })
+              )}
+            </div>
+          </section>
+
         </div>
       </main>
 
@@ -374,3 +440,4 @@ const UserProducts = () => {
 };
 
 export default UserProducts;
+
