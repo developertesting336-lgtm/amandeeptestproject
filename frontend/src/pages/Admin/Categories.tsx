@@ -122,63 +122,47 @@ const CategoryList = () => {
       setModalError("");
 
       const token = localStorage.getItem("token");
-      let response;
+      let fileToSend: File | null = imageFile;
 
-      if (imageFile) {
-        const formData = new FormData();
-        formData.append("name", name.trim());
-        formData.append("description", description.trim());
-        if (parent) formData.append("parent", parent);
-        formData.append("image", imageFile);
-        formData.append("images", imageFile);
-
-        response = await fetch(
-          `${API_BASE_URL}/api/admin/add/categories`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-          }
-        );
-
-        if (!response.ok) {
-          response = await fetch(
-            `${API_BASE_URL}/api/admin/add/categories`,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                name: name.trim(),
-                description: description.trim(),
-                image: image,
-                parent: parent ? parent : null,
-              }),
-            }
-          );
+      if (!fileToSend && image.trim()) {
+        try {
+          const res = await fetch(image.trim());
+          const blob = await res.blob();
+          fileToSend = new File([blob], "category.jpg", {
+            type: blob.type || "image/jpeg",
+          });
+        } catch {
+          // Fallback if URL cannot be fetched directly (e.g. CORS)
         }
-      } else {
-        response = await fetch(
-          `${API_BASE_URL}/api/admin/add/categories`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              name: name.trim(),
-              description: description.trim(),
-              image: image.trim(),
-              parent: parent ? parent : null,
-            }),
-          }
-        );
       }
+
+      if (!fileToSend && !image.trim()) {
+        setModalError("Category image is required.");
+        setSubmitting(false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("name", name.trim());
+      formData.append("description", description.trim());
+      if (parent) formData.append("parent", parent);
+
+      if (fileToSend) {
+        formData.append("image", fileToSend);
+      } else if (image.trim()) {
+        formData.append("image", image.trim());
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/add/categories`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
 
       const result = await response.json();
 
@@ -243,63 +227,41 @@ const CategoryList = () => {
       setEditModalError("");
 
       const token = localStorage.getItem("token");
-      let response;
+      let editFileToSend: File | null = editImageFile;
 
-      if (editImageFile) {
-        const formData = new FormData();
-        formData.append("name", editName.trim());
-        formData.append("description", editDescription.trim());
-        if (editParent) formData.append("parent", editParent);
-        formData.append("image", editImageFile);
-        formData.append("images", editImageFile);
-
-        response = await fetch(
-          `${API_BASE_URL}/api/admin/category/${editingCategory._id}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-          }
-        );
-
-        if (!response.ok) {
-          response = await fetch(
-            `${API_BASE_URL}/api/admin/category/${editingCategory._id}`,
-            {
-              method: "PUT",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                name: editName.trim(),
-                description: editDescription.trim(),
-                image: editImage,
-                parent: editParent ? editParent : null,
-              }),
-            }
-          );
+      if (!editFileToSend && editImage.trim()) {
+        try {
+          const res = await fetch(editImage.trim());
+          const blob = await res.blob();
+          editFileToSend = new File([blob], "category.jpg", {
+            type: blob.type || "image/jpeg",
+          });
+        } catch {
+          // Fallback if URL cannot be fetched directly
         }
-      } else {
-        response = await fetch(
-          `${API_BASE_URL}/api/admin/category/${editingCategory._id}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              name: editName.trim(),
-              description: editDescription.trim(),
-              image: editImage.trim(),
-              parent: editParent ? editParent : null,
-            }),
-          }
-        );
       }
+
+      const formData = new FormData();
+      formData.append("name", editName.trim());
+      formData.append("description", editDescription.trim());
+      if (editParent) formData.append("parent", editParent);
+
+      if (editFileToSend) {
+        formData.append("image", editFileToSend);
+      } else if (editImage.trim()) {
+        formData.append("image", editImage.trim());
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/category/${editingCategory._id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
 
       const result = await response.json();
 

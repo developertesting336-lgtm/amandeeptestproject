@@ -11,6 +11,8 @@ export const getCategories = async (req, res) => {
       .populate("parent", "name")
       .sort({ createdAt: -1 });
 
+    console.log(categories)
+
     return res.status(200).json({
       success: true,
       message: "Categories fetched successfully",
@@ -158,16 +160,27 @@ export const addCategory = async (req, res) => {
 
 
 
-    const file = req.file
-    const image = await uploadBufferToCloudinary(
-      file.buffer,
-      "ecommerce/products"
-    );
+    let imageUrl = "";
+
+    if (req.file && req.file.buffer) {
+      const image = await uploadBufferToCloudinary(
+        req.file.buffer,
+        "ecommerce/products"
+      );
+      imageUrl = image.url;
+    } else if (req.body.image && typeof req.body.image === "string" && req.body.image.trim()) {
+      imageUrl = req.body.image.trim();
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Category image file (field 'image') is required",
+      });
+    }
 
     const category = await Category.create({
       name: cleanName,
       description: description?.trim() || "",
-      image: image.url,
+      image: imageUrl,
       parent: parent || null,
     });
 
@@ -178,7 +191,7 @@ export const addCategory = async (req, res) => {
         : "Category added successfully",
       data: {
         category,
-        //  image:image.url
+        // image: image.url
       },
     });
   } catch (error) {
@@ -285,7 +298,15 @@ export const updateCategory = async (req, res) => {
       category.description = description.trim();
     }
 
-
+    if (req.file && req.file.buffer) {
+      const uploadedImage = await uploadBufferToCloudinary(
+        req.file.buffer,
+        "ecommerce/products"
+      );
+      category.image = uploadedImage.url;
+    } else if (req.body.image && typeof req.body.image === "string" && req.body.image.trim()) {
+      category.image = req.body.image.trim();
+    }
 
     if (isActive !== undefined) {
       category.isActive = isActive;
