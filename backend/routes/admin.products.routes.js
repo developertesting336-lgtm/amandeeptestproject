@@ -36,7 +36,7 @@ router.delete(
 );
 
 router.put(
-  "/products/:productId",
+  "/product/:productId",
   protect,
   adminOnly,
   upload.array("images", 5),
