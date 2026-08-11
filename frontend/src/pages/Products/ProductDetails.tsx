@@ -28,6 +28,7 @@ interface Product {
   name: string;
   short_description?: string;
   full_description?: string;
+  fullDescription?: string;
   description?: string;
   highlights?: string[];
   price: number;
@@ -369,7 +370,11 @@ const ProductDetails = () => {
         )}
 
         {/* FULL DESCRIPTION SECTION */}
-        {product.full_description && (
+        {Boolean(
+          product.full_description ||
+            product.fullDescription ||
+            product.description
+        ) && (
           <section className="product-detail-section-card">
             <h2 className="product-detail-section-title">
               <FileText size={18} style={{ color: "#2563eb", marginRight: 8, verticalAlign: "middle" }} />
@@ -377,7 +382,13 @@ const ProductDetails = () => {
             </h2>
             <div
               className="product-detail-desc"
-              dangerouslySetInnerHTML={{ __html: product.full_description }}
+              dangerouslySetInnerHTML={{
+                __html:
+                  product.full_description ||
+                  product.fullDescription ||
+                  product.description ||
+                  "",
+              }}
             />
           </section>
         )}

@@ -157,129 +157,243 @@ const EditProduct = () => {
         setError("");
 
         const token = localStorage.getItem("token");
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
 
-        const [productResponse, categoryResponse] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/admin/product/${productId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-          fetch(`${API_BASE_URL}/api/admin/categories/all`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
+        // 1. Fetch Product details from possible endpoints
+        let productResponse: Response | null = null;
+        const productEndpoints = [
+          `${API_BASE_URL}/api/admin/product/${productId}`,
+          `${API_BASE_URL}/api/products/${productId}`,
+          `${API_BASE_URL}/api/product/${productId}`,
+          `${API_BASE_URL}/api/admin/products/${productId}`,
+        ];
+
+        for (const endpoint of productEndpoints) {
+          try {
+            const res = await fetch(endpoint, { headers });
+            if (res.ok) {
+              productResponse = res;
+              break;
+            }
+          } catch (err) {
+            console.warn(`Failed fetching product from ${endpoint}:`, err);
+          }
+        }
+
+        if (!productResponse) {
+          throw new Error("Product not found or failed to fetch product data from server.");
+        }
 
         const productData = await productResponse.json();
-        const categoryData = await categoryResponse.json();
 
-        if (!productResponse.ok || !productData.success) {
-          throw new Error(productData.message || "Failed to load product");
+        // 2. Fetch Categories list
+        const categoryEndpoints = [
+          `${API_BASE_URL}/api/admin/categories/all`,
+          `${API_BASE_URL}/api/categories`,
+          `${API_BASE_URL}/api/admin/categories`,
+        ];
+
+        for (const endpoint of categoryEndpoints) {
+          try {
+            const res = await fetch(endpoint, { headers });
+            if (res.ok) {
+              const categoryData = await res.json();
+              const catList =
+                categoryData.data?.categories ||
+                categoryData.data ||
+                categoryData.categories ||
+                (Array.isArray(categoryData) ? categoryData : []);
+              if (Array.isArray(catList)) {
+                setCategories(catList);
+                break;
+              }
+            }
+          } catch (err) {
+            console.warn(`Failed fetching categories from ${endpoint}:`, err);
+          }
         }
 
-        setCategories(categoryData.data || []);
+        // 3. Extract Product object safely
+        const rawData = productData.data || productData.product || productData;
+        const prod =
+          Array.isArray(rawData)
+            ? rawData[0]
+            : rawData && typeof rawData === "object" && rawData.product
+            ? rawData.product
+            : rawData;
 
-        const prod = productData.data || productData.product;
-        if (prod) {
-          setName(prod.name || "");
-          setShortDescription(prod.short_description || prod.description || "");
-          setFullDescription(prod.full_description || prod.description || "");
-          setHighlights(
-            Array.isArray(prod.highlights) && prod.highlights.length > 0
-              ? prod.highlights
-              : [""]
-          );
-
-          const catId =
-            typeof prod.category === "object" && prod.category !== null
-              ? prod.category._id
-              : prod.category || "";
-          setCategory(catId);
-
-          const subCatId =
-            typeof prod.subcategory === "object" && prod.subcategory !== null
-              ? prod.subcategory._id
-              : prod.subcategory || "";
-          setSubcategory(subCatId);
-
-          setBrand(prod.brand || "");
-          setPrice(prod.price !== undefined ? String(prod.price) : "");
-          setSalePrice(prod.salePrice ? String(prod.salePrice) : "");
-          setSku(prod.sku || "");
-          setStock(prod.stock !== undefined ? String(prod.stock) : "0");
-
-          if (prod.manufacturer) {
-            setManufacturer({
-              name: prod.manufacturer.name || "",
-              address: prod.manufacturer.address || "",
-              country: prod.manufacturer.country || "",
-              contact: prod.manufacturer.contact || "",
-              email: prod.manufacturer.email || "",
-              website: prod.manufacturer.website || "",
-            });
-          }
-
-          if (prod.warranty) {
-            setWarranty({
-              available: Boolean(prod.warranty.available),
-              duration: prod.warranty.duration ? String(prod.warranty.duration) : "",
-              unit: prod.warranty.unit || "months",
-              type: prod.warranty.type || "No Warranty",
-              description: prod.warranty.description || "",
-              terms: prod.warranty.terms || "",
-            });
-          }
-
-          if (prod.returnPolicy) {
-            setReturnPolicy({
-              eligible: Boolean(prod.returnPolicy.eligible),
-              returnWindow: prod.returnPolicy.returnWindow
-                ? String(prod.returnPolicy.returnWindow)
-                : "",
-              returnWindowUnit: prod.returnPolicy.returnWindowUnit || "days",
-              replacementAvailable: Boolean(prod.returnPolicy.replacementAvailable),
-              refundAvailable: Boolean(prod.returnPolicy.refundAvailable),
-              conditions: prod.returnPolicy.conditions || "",
-              description: prod.returnPolicy.description || "",
-            });
-          }
-
-          if (prod.attributes) {
-            setAttributes({
-              color: prod.attributes.color || "",
-              size: prod.attributes.size || "",
-              material: prod.attributes.material || "",
-              weightValue: prod.attributes.weight?.value
-                ? String(prod.attributes.weight.value)
-                : "",
-              weightUnit: prod.attributes.weight?.unit || "g",
-              length: prod.attributes.dimensions?.length
-                ? String(prod.attributes.dimensions.length)
-                : "",
-              width: prod.attributes.dimensions?.width
-                ? String(prod.attributes.dimensions.width)
-                : "",
-              height: prod.attributes.dimensions?.height
-                ? String(prod.attributes.dimensions.height)
-                : "",
-              dimUnit: prod.attributes.dimensions?.unit || "cm",
-            });
-          }
-
-          setIsFeatured(Boolean(prod.isFeatured));
-          setIsActive(prod.isActive !== false);
-
-          const formattedImgList: ProductImageItem[] = Array.isArray(prod.images)
-            ? prod.images.map((img: any) =>
-                typeof img === "string"
-                  ? { public_id: img, url: img }
-                  : {
-                      public_id: img.public_id || img._id || img.url,
-                      url: img.url,
-                      alt: img.alt || prod.name,
-                      isPrimary: Boolean(img.isPrimary),
-                    }
-              )
-            : [];
-          setExistingImages(formattedImgList);
+        if (!prod || typeof prod !== "object") {
+          throw new Error("Invalid product data received from backend.");
         }
+
+        setName(prod.name || "");
+        setShortDescription(
+          prod.short_description || prod.shortDescription || prod.description || ""
+        );
+        setFullDescription(
+          prod.full_description ||
+          prod.fullDescription ||
+          prod.long_description ||
+          prod.longDescription ||
+          prod.details ||
+          prod.content ||
+          prod.body ||
+          ""
+        );
+
+        let parsedHighlights: string[] = [""];
+        if (Array.isArray(prod.highlights) && prod.highlights.length > 0) {
+          parsedHighlights = prod.highlights;
+        } else if (typeof prod.highlights === "string") {
+          try {
+            const jsonH = JSON.parse(prod.highlights);
+            if (Array.isArray(jsonH) && jsonH.length > 0) {
+              parsedHighlights = jsonH;
+            }
+          } catch {
+            parsedHighlights = [prod.highlights];
+          }
+        }
+        setHighlights(parsedHighlights);
+
+        const catId =
+          typeof prod.category === "object" && prod.category !== null
+            ? prod.category._id || prod.category.id
+            : String(prod.category || "");
+        setCategory(catId);
+
+        const subCatId =
+          typeof prod.subcategory === "object" && prod.subcategory !== null
+            ? prod.subcategory._id || prod.subcategory.id
+            : String(prod.subcategory || "");
+        setSubcategory(subCatId);
+
+        setBrand(prod.brand || "");
+        setPrice(
+          prod.price !== undefined && prod.price !== null ? String(prod.price) : ""
+        );
+        setSalePrice(
+          prod.salePrice !== undefined && prod.salePrice !== null
+            ? String(prod.salePrice)
+            : ""
+        );
+        setSku(prod.sku || "");
+        setStock(
+          prod.stock !== undefined && prod.stock !== null ? String(prod.stock) : "0"
+        );
+
+        if (prod.manufacturer) {
+          const m =
+            typeof prod.manufacturer === "string"
+              ? (() => {
+                  try {
+                    return JSON.parse(prod.manufacturer);
+                  } catch {
+                    return {};
+                  }
+                })()
+              : prod.manufacturer;
+
+          setManufacturer({
+            name: m?.name || "",
+            address: m?.address || "",
+            country: m?.country || "",
+            contact: m?.contact || "",
+            email: m?.email || "",
+            website: m?.website || "",
+          });
+        }
+
+        if (prod.warranty) {
+          const w =
+            typeof prod.warranty === "string"
+              ? (() => {
+                  try {
+                    return JSON.parse(prod.warranty);
+                  } catch {
+                    return {};
+                  }
+                })()
+              : prod.warranty;
+
+          setWarranty({
+            available: Boolean(w?.available),
+            duration: w?.duration ? String(w.duration) : "",
+            unit: w?.unit || "months",
+            type: w?.type || "No Warranty",
+            description: w?.description || "",
+            terms: w?.terms || "",
+          });
+        }
+
+        if (prod.returnPolicy) {
+          const r =
+            typeof prod.returnPolicy === "string"
+              ? (() => {
+                  try {
+                    return JSON.parse(prod.returnPolicy);
+                  } catch {
+                    return {};
+                  }
+                })()
+              : prod.returnPolicy;
+
+          setReturnPolicy({
+            eligible: Boolean(r?.eligible),
+            returnWindow: r?.returnWindow ? String(r.returnWindow) : "",
+            returnWindowUnit: r?.returnWindowUnit || "days",
+            replacementAvailable: Boolean(r?.replacementAvailable),
+            refundAvailable: Boolean(r?.refundAvailable),
+            conditions: r?.conditions || "",
+            description: r?.description || "",
+          });
+        }
+
+        if (prod.attributes) {
+          const a =
+            typeof prod.attributes === "string"
+              ? (() => {
+                  try {
+                    return JSON.parse(prod.attributes);
+                  } catch {
+                    return {};
+                  }
+                })()
+              : prod.attributes;
+
+          setAttributes({
+            color: a?.color || "",
+            size: a?.size || "",
+            material: a?.material || "",
+            weightValue: a?.weight?.value ? String(a.weight.value) : "",
+            weightUnit: a?.weight?.unit || "g",
+            length: a?.dimensions?.length ? String(a.dimensions.length) : "",
+            width: a?.dimensions?.width ? String(a.dimensions.width) : "",
+            height: a?.dimensions?.height ? String(a.dimensions.height) : "",
+            dimUnit: a?.dimensions?.unit || "cm",
+          });
+        }
+
+        setIsFeatured(Boolean(prod.isFeatured));
+        setIsActive(prod.isActive !== false);
+
+        const rawImages = prod.images || [];
+        const formattedImgList: ProductImageItem[] = Array.isArray(rawImages)
+          ? rawImages.map((img: any, i: number) =>
+              typeof img === "string"
+                ? { public_id: `img_${i}`, url: img }
+                : {
+                    public_id: img.public_id || img._id || img.url || `img_${i}`,
+                    url: img.url || img.path || img.secure_url || "",
+                    alt: img.alt || prod.name,
+                    isPrimary: Boolean(img.isPrimary || i === 0),
+                  }
+            )
+          : [];
+        setExistingImages(formattedImgList);
       } catch (err) {
         console.error("Load Product Edit Error:", err);
         setError(err instanceof Error ? err.message : "Failed to load product");
