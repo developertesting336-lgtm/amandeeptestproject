@@ -45,6 +45,9 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
+app.get('/status', (req, res) => {
+  res.send("working")
+})
 app.use('/api/auth', authRoutes)
 app.use('/api/dashboard', dashboard)
 app.use('/api/admin', adminProducts)
