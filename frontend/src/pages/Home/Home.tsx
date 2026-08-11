@@ -1,4 +1,4 @@
-import "./Home.css";
+import "./home.css";
 import PromoBar from "./PromoBar";
 import Hero2 from "./hero2";
 import ProductSection from "./product";
@@ -25,4 +25,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Home;
