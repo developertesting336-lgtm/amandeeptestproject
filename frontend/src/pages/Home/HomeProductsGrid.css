@@ -30,7 +30,7 @@
 .home-products-eyebrow {
   display: inline-block;
   margin-bottom: 4px;
-  color: #4d7c0f;
+  color: #7257c2;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.6px;
@@ -194,8 +194,8 @@
 }
 
 .home-product-cat {
-  color: #4d7c0f;
-  background-color: #ecf3e6;
+  color: #7257c2;
+  background-color: #f3f0fa;
   padding: 2px 6px;
   border-radius: 5px;
   font-size: 10px;
@@ -220,7 +220,7 @@
 }
 
 .home-product-card:hover .home-product-name {
-  color: #4d7c0f;
+  color: #7257c2;
 }
 
 .home-product-price-row {

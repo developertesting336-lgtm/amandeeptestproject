@@ -45,7 +45,7 @@
   display: inline-flex;
   align-items: center;
   margin-bottom: 2px;
-  color: #4d7c0f;
+  color: #7257c2;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.6px;
@@ -96,9 +96,9 @@
 }
 
 .product-tab-btn.active {
-  background: #4d7c0f;
+  background: #7257c2;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(77, 124, 15, 0.28);
+  box-shadow: 0 4px 12px rgba(114, 87, 194, 0.28);
 }
 
 .product-section-viewall {
@@ -284,8 +284,8 @@
 
 .product-category {
   margin: 0;
-  color: #4d7c0f;
-  background-color: #ecf3e6;
+  color: #7257c2;
+  background-color: #f3f0fa;
   padding: 2px 6px;
   border-radius: 5px;
   font-size: 10px;
@@ -312,7 +312,7 @@
 }
 
 .product-card:hover .product-name {
-  color: #4d7c0f;
+  color: #7257c2;
 }
 
 /* PRICING ROW - HIGHLY VISIBLE & BOLD */
@@ -375,11 +375,11 @@
 }
 
 .product-slider-arrow:hover {
-  background-color: #4d7c0f;
-  border-color: #4d7c0f;
+  background-color: #7257c2;
+  border-color: #7257c2;
   color: #ffffff;
   transform: translateY(-50%) scale(1.08);
-  box-shadow: 0 6px 18px rgba(77, 124, 15, 0.35);
+  box-shadow: 0 6px 18px rgba(114, 87, 194, 0.35);
 }
 
 .product-slider-prev {
@@ -416,8 +416,8 @@
 .product-slider-dot.active {
   width: 24px;
   border-radius: 12px;
-  background-color: #4d7c0f;
-  box-shadow: 0 2px 6px rgba(77, 124, 15, 0.3);
+  background-color: #7257c2;
+  box-shadow: 0 2px 6px rgba(114, 87, 194, 0.3);
 }
 
 /* Responsive */

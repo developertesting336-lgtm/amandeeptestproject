@@ -20,7 +20,7 @@
 
 .offers-trust-eyebrow {
   display: inline-block;
-  color: #4d7c0f;
+  color: #7257c2;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.8px;
@@ -68,7 +68,7 @@
 .offer-tag {
   font-size: 11px;
   font-weight: 700;
-  color: #4d7c0f;
+  color: #7257c2;
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
@@ -108,11 +108,11 @@
   width: 46px;
   height: 46px;
   border-radius: 10px;
-  background-color: #ecf3e6;
-  border: 1px solid #d1e5c0;
-  color: #4d7c0f;
+  background-color: #f3f0fa;
+  border: 1px solid #e2d9f7;
+  color: #7257c2;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(77, 124, 15, 0.1);
+  box-shadow: 0 2px 8px rgba(114, 87, 194, 0.1);
 }
 
 .trust-label {

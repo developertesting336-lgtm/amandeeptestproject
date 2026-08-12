@@ -33,7 +33,7 @@
 
 .video-tag {
   display: inline-block;
-  background: #4d7c0f;
+  background: #7257c2;
   color: #ffffff;
   padding: 4px 12px;
   border-radius: 20px;
@@ -42,7 +42,7 @@
   letter-spacing: 1.2px;
   margin-bottom: 12px;
   text-transform: uppercase;
-  box-shadow: 0 2px 8px rgba(77, 124, 15, 0.25);
+  box-shadow: 0 2px 8px rgba(114, 87, 194, 0.25);
 }
 
 .video-content h2 {
@@ -76,9 +76,9 @@
 }
 
 .video-content button:hover {
-  background: #4d7c0f;
+  background: #7257c2;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(77, 124, 15, 0.25);
+  box-shadow: 0 4px 14px rgba(114, 87, 194, 0.25);
 }
 
 .video-card {

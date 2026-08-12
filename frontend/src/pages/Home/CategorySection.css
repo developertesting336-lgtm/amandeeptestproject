@@ -28,7 +28,7 @@
 .category-eyebrow {
   display: inline-block;
   margin-bottom: 4px;
-  color: #4d7c0f;
+  color: #7257c2;
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1.6px;
@@ -68,7 +68,7 @@
   transform: translateY(-5px);
 }
 
-/* BANNER IMAGE CONTAINER WITH CATEGORY BG COLOR */
+/* BANNER IMAGE CONTAINER - TRANSPARENT WITHOUT BORDER OR BG */
 
 .category-img-wrap {
   position: relative;
@@ -78,17 +78,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
+  padding: 0;
   box-sizing: border-box;
-  border-radius: 16px;
-  border: 1px solid #e5e3db !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  transition: filter 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .category-card:hover .category-img-wrap {
-  border-color: #cbd5e1 !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .category-img {
@@ -129,7 +128,7 @@
 }
 
 .category-card:hover .category-name {
-  color: #4d7c0f;
+  color: #7257c2;
 }
 
 .category-action-link {
@@ -143,7 +142,7 @@
 }
 
 .category-card:hover .category-action-link {
-  color: #4d7c0f;
+  color: #7257c2;
   gap: 6px;
 }
 

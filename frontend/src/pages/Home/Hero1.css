@@ -1,20 +1,26 @@
+/* =========================================================
+   FULL-BLEED HERO BANNER SLIDER - PERFECT FIT FOR 100% ZOOM
+========================================================= */
+
 .hero {
   width: 100%;
-  padding: 16px 24px;
-  background-color: #f4f3ef;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   box-sizing: border-box;
 }
 
 .hero-slider {
   width: 100%;
-  max-width: 1350px;
-  margin: auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
   position: relative;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  border: 1px solid #f1f5f9;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
 }
 
 .hero-track {
@@ -24,12 +30,16 @@
 
 .hero-slide {
   min-width: 100%;
+  width: 100%;
 }
 
 .hero-slide img {
   width: 100%;
+  height: auto;
+  max-height: 380px;
+  object-fit: cover;
   display: block;
-  border-radius: 16px;
+  border-radius: 0;
 }
 
 .hero-btn {
@@ -38,18 +48,19 @@
   transform: translateY(-50%);
   width: 44px;
   height: 44px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(226, 232, 240, 0.8);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.92);
   color: #0f172a;
   cursor: pointer;
   font-size: 20px;
   transition: all 0.25s ease;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(6px);
+  z-index: 5;
 }
 
 .hero-btn:hover {
@@ -61,20 +72,21 @@
 }
 
 .prev {
-  left: 16px;
+  left: 20px;
 }
 
 .next {
-  right: 16px;
+  right: 20px;
 }
 
 .hero-dots {
   position: absolute;
-  bottom: 20px;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   gap: 8px;
+  z-index: 5;
 }
 
 .dot {
@@ -90,26 +102,40 @@
 .dot.active {
   width: 28px;
   border-radius: 20px;
-  background: #4d7c0f;
+  background: #7257c2;
 }
 
-@media (max-width: 768px) {
-  .hero {
-    padding: 8px 12px;
-  }
-
-  .hero-slider {
-    width: 100%;
-    border-radius: 12px;
-  }
-
+/* Responsive Breakpoints */
+@media (max-width: 992px) {
   .hero-slide img {
-    border-radius: 12px;
+    max-height: 300px;
+  }
+
+  .prev {
+    left: 14px;
+  }
+
+  .next {
+    right: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero-slide img {
+    max-height: 220px;
   }
 
   .hero-btn {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+  }
+
+  .prev {
+    left: 10px;
+  }
+
+  .next {
+    right: 10px;
   }
 }

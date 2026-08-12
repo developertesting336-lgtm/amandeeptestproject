@@ -23,21 +23,6 @@ const FALLBACK_CATEGORIES: Category[] = [
   { _id: "c4", name: "Toys & Games", slug: "toys", image: toyImg },
 ];
 
-const CATEGORY_BG_COLORS: Record<string, { bg: string }> = {
-  electronics: {
-    bg: "#eff6ff",
-  },
-  fashion: {
-    bg: "#fdf2f8",
-  },
-  grocery: {
-    bg: "#f0fdf4",
-  },
-  toys: {
-    bg: "#fff7ed",
-  },
-};
-
 const getFallbackImage = (name: string, index: number) => {
   const nameLower = (name || "").toLowerCase();
   if (nameLower.includes("electr") || nameLower.includes("phone") || nameLower.includes("gadget")) {
@@ -116,13 +101,6 @@ const CategorySection = () => {
         <div className="category-grid">
           {categories.map((cat, index) => {
             const img = getCategoryImage(cat, index);
-            const keyName = (cat.name || "").toLowerCase();
-            let themeKey = "electronics";
-            if (keyName.includes("fash") || keyName.includes("cloth")) themeKey = "fashion";
-            else if (keyName.includes("gros") || keyName.includes("food") || keyName.includes("groc")) themeKey = "grocery";
-            else if (keyName.includes("toy") || keyName.includes("game")) themeKey = "toys";
-
-            const colors = CATEGORY_BG_COLORS[themeKey] || CATEGORY_BG_COLORS.electronics;
 
             return (
               <div
@@ -130,11 +108,8 @@ const CategorySection = () => {
                 className="category-card"
                 onClick={() => handleCategoryClick(cat.name)}
               >
-                {/* IMAGE BANNER CONTAINER WITH CATEGORY BG COLOR */}
-                <div
-                  className="category-img-wrap"
-                  style={{ backgroundColor: colors.bg }}
-                >
+                {/* IMAGE BANNER CONTAINER */}
+                <div className="category-img-wrap">
                   <img
                     src={img}
                     alt={cat.name}
