@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowRight, Heart } from "lucide-react";
+import { ArrowRight, Heart, ShoppingCart } from "lucide-react";
+import { useCart } from "../../context/cartContext";
 import product1 from "../../assets/1.jpeg";
 import "./HomeProductsGrid.css";
 
@@ -37,6 +38,7 @@ const formatImageUrl = (path?: any, fallback: string = product1) => {
 
 const HomeProductsGrid = () => {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
@@ -68,6 +70,11 @@ const HomeProductsGrid = () => {
   const toggleWishlist = (e: React.MouseEvent, productId: string) => {
     e.stopPropagation();
     setWishlist((prev) => ({ ...prev, [productId]: !prev[productId] }));
+  };
+
+  const handleAddToCart = (e: React.MouseEvent, productId: string) => {
+    e.stopPropagation();
+    addToCart(productId, 1);
   };
 
   if (loading) {
@@ -149,10 +156,22 @@ const HomeProductsGrid = () => {
                   <h3 className="home-product-name">{prod.name}</h3>
 
                   <div className="home-product-price-row">
-                    <span className="home-product-price">₹{(currentPrice || 0).toLocaleString("en-IN")}</span>
-                    {hasDiscount && (
-                      <span className="home-product-old-price">₹{(prod.price || 0).toLocaleString("en-IN")}</span>
-                    )}
+                    <div className="home-product-price-block">
+                      <span className="home-product-price">₹{(currentPrice || 0).toLocaleString("en-IN")}</span>
+                      {hasDiscount && (
+                        <span className="home-product-old-price">₹{(prod.price || 0).toLocaleString("en-IN")}</span>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      className="home-product-add-btn"
+                      onClick={(e) => handleAddToCart(e, prod._id)}
+                      title="Add to Cart"
+                      aria-label="Add to Cart"
+                    >
+                      <ShoppingCart size={15} strokeWidth={2} />
+                    </button>
                   </div>
                 </div>
               </div>

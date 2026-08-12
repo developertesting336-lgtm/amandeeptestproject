@@ -259,6 +259,8 @@ const UserProducts = () => {
     addToCart(productId, 1);
   };
 
+
+
   const handleResetFilters = () => {
     setSelectedCategory("all");
     setSearchQuery("");
@@ -396,32 +398,37 @@ const UserProducts = () => {
                             (e.target as HTMLImageElement).src = product1;
                           }}
                         />
-
-                        {discountPercent > 0 && (
-                          <span className="user-product-badge">-{discountPercent}%</span>
-                        )}
-
-                        <button
-                          className="user-product-cart-btn"
-                          onClick={(e) => handleAddToCart(e, product._id)}
-                          aria-label="Add to cart"
-                        >
-                          <ShoppingCart size={17} strokeWidth={2} />
-                        </button>
                       </div>
 
                       <div className="user-product-body">
-                        <span className="user-product-category">
-                          {typeof product.category === "object" ? product.category?.name || "General" : product.category || "General"}
-                        </span>
+                        <div className="user-product-meta-row">
+                          <span className="user-product-category">
+                            {typeof product.category === "object" ? product.category?.name || "General" : product.category || "General"}
+                          </span>
+                          {discountPercent > 0 && (
+                            <span className="user-product-discount-tag">-{discountPercent}%</span>
+                          )}
+                        </div>
 
                         <h3 className="user-product-title">{product.name}</h3>
 
                         <div className="user-product-footer">
-                          <span className="user-product-price">₹{currentPrice.toLocaleString("en-IN")}</span>
-                          {hasDiscount && (
-                            <span className="user-product-old-price">₹{product.price.toLocaleString("en-IN")}</span>
-                          )}
+                          <div className="user-product-price-block">
+                            <span className="user-product-price">₹{currentPrice.toLocaleString("en-IN")}</span>
+                            {hasDiscount && (
+                              <span className="user-product-old-price">₹{product.price.toLocaleString("en-IN")}</span>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            className="user-product-cart-btn"
+                            onClick={(e) => handleAddToCart(e, product._id)}
+                            title="Add to Cart"
+                            aria-label="Add to Cart"
+                          >
+                            <ShoppingCart size={15} strokeWidth={2} />
+                          </button>
                         </div>
                       </div>
                     </article>
