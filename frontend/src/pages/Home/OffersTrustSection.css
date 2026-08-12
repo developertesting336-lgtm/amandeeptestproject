@@ -1,10 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 .offers-trust-section {
-  background-color: #ffffff;
+  background-color: #f4f3ef;
   padding: 50px 5% 60px;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #e5e3db;
   box-sizing: border-box;
 }
 
@@ -20,7 +20,7 @@
 
 .offers-trust-eyebrow {
   display: inline-block;
-  color: #2563eb;
+  color: #4d7c0f;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.8px;
@@ -61,14 +61,14 @@
 
 .offer-card:hover {
   transform: translateY(-4px);
-  border-color: #2563eb;
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
+  border-color: #cbd5e1;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
 }
 
 .offer-tag {
   font-size: 11px;
   font-weight: 700;
-  color: #2563eb;
+  color: #4d7c0f;
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
@@ -108,11 +108,11 @@
   width: 46px;
   height: 46px;
   border-radius: 10px;
-  background-color: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #2563eb;
+  background-color: #ecf3e6;
+  border: 1px solid #d1e5c0;
+  color: #4d7c0f;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 2px 8px rgba(77, 124, 15, 0.1);
 }
 
 .trust-label {

@@ -1,10 +1,10 @@
 .video-section {
   width: 100%;
   padding: 30px 5% 35px;
-  background-color: #ffffff;
+  background-color: #eeebe3;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   box-sizing: border-box;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #e5e3db;
 }
 
 .video-section-wrapper {
@@ -33,7 +33,7 @@
 
 .video-tag {
   display: inline-block;
-  background: #2563eb;
+  background: #4d7c0f;
   color: #ffffff;
   padding: 4px 12px;
   border-radius: 20px;
@@ -42,6 +42,7 @@
   letter-spacing: 1.2px;
   margin-bottom: 12px;
   text-transform: uppercase;
+  box-shadow: 0 2px 8px rgba(77, 124, 15, 0.25);
 }
 
 .video-content h2 {
@@ -75,9 +76,9 @@
 }
 
 .video-content button:hover {
-  /* background: #2563eb; */
+  background: #4d7c0f;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 4px 14px rgba(77, 124, 15, 0.25);
 }
 
 .video-card {
@@ -97,8 +98,8 @@
 
 .video-card:hover {
   transform: translateY(-3px);
-  /* border-color: #2563eb; */
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
+  border-color: #cbd5e1;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
 }
 
 .video-card video {

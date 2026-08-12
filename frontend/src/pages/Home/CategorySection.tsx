@@ -23,6 +23,21 @@ const FALLBACK_CATEGORIES: Category[] = [
   { _id: "c4", name: "Toys & Games", slug: "toys", image: toyImg },
 ];
 
+const CATEGORY_BG_COLORS: Record<string, { bg: string }> = {
+  electronics: {
+    bg: "#eff6ff",
+  },
+  fashion: {
+    bg: "#fdf2f8",
+  },
+  grocery: {
+    bg: "#f0fdf4",
+  },
+  toys: {
+    bg: "#fff7ed",
+  },
+};
+
 const getFallbackImage = (name: string, index: number) => {
   const nameLower = (name || "").toLowerCase();
   if (nameLower.includes("electr") || nameLower.includes("phone") || nameLower.includes("gadget")) {
@@ -94,7 +109,6 @@ const CategorySection = () => {
       <div className="category-container">
         <div className="category-section-header">
           <div>
-            <span className="category-eyebrow">CURATED COLLECTIONS</span>
             <h2 className="category-title">Shop by Category</h2>
           </div>
         </div>
@@ -102,26 +116,42 @@ const CategorySection = () => {
         <div className="category-grid">
           {categories.map((cat, index) => {
             const img = getCategoryImage(cat, index);
+            const keyName = (cat.name || "").toLowerCase();
+            let themeKey = "electronics";
+            if (keyName.includes("fash") || keyName.includes("cloth")) themeKey = "fashion";
+            else if (keyName.includes("gros") || keyName.includes("food") || keyName.includes("groc")) themeKey = "grocery";
+            else if (keyName.includes("toy") || keyName.includes("game")) themeKey = "toys";
+
+            const colors = CATEGORY_BG_COLORS[themeKey] || CATEGORY_BG_COLORS.electronics;
+
             return (
               <div
                 key={cat._id || index}
                 className="category-card"
                 onClick={() => handleCategoryClick(cat.name)}
               >
-                <img
-                  src={img}
-                  alt={cat.name}
-                  className="category-card-bg"
-                  onError={(e) => {
-                    const target = e.currentTarget;
-                    target.onerror = null;
-                    target.src = getFallbackImage(cat.name, index);
-                  }}
-                />
-                <div className="category-card-overlay">
-                  <h3 className="category-card-name">{cat.name}</h3>
-                  <span className="category-card-count">
-                    Explore Collection <ArrowRight size={14} />
+                {/* IMAGE BANNER CONTAINER WITH CATEGORY BG COLOR */}
+                <div
+                  className="category-img-wrap"
+                  style={{ backgroundColor: colors.bg }}
+                >
+                  <img
+                    src={img}
+                    alt={cat.name}
+                    className="category-img"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      target.onerror = null;
+                      target.src = getFallbackImage(cat.name, index);
+                    }}
+                  />
+                </div>
+
+                {/* TEXT DETAILS BELOW CONTAINER */}
+                <div className="category-info">
+                  <h3 className="category-name">{cat.name}</h3>
+                  <span className="category-action-link">
+                    Explore Collection <ArrowRight size={13} />
                   </span>
                 </div>
               </div>
@@ -134,4 +164,3 @@ const CategorySection = () => {
 };
 
 export default CategorySection;
-

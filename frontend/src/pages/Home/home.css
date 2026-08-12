@@ -14,7 +14,7 @@
   padding: 0;
   box-sizing: border-box;
 
-  background-color: #ffffff;
+  background-color: #f4f3ef;
   color: #0f172a;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 
@@ -43,7 +43,7 @@
   letter-spacing: 1.8px;
   text-transform: uppercase;
 
-  color: #2563eb;
+  color: #4d7c0f;
 }
 
 .section-heading h2 {
@@ -74,4 +74,4 @@
   .section-heading h2 {
     font-size: 28px;
   }
-}
+}

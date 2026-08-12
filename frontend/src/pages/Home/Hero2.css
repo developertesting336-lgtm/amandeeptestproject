@@ -2,7 +2,7 @@
 
 .hero {
   position: relative;
-  background-color: #ffffff;
+  background-color: #f4f3ef;
   overflow: hidden;
   padding: 50px 5% 40px;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -15,7 +15,7 @@
   right: -100px;
   width: 480px;
   height: 480px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0) 70%);
+  background: radial-gradient(circle, rgba(77, 124, 15, 0.08) 0%, rgba(77, 124, 15, 0) 70%);
   pointer-events: none;
 }
 
@@ -30,59 +30,68 @@
   z-index: 1;
 }
 
-/* Category Sidebar Panel */
-.hero-category-sidebar {
-  width: 250px;
+/* Category Badges Showcase Grid */
+
+.hero-category-showcase {
+  width: 440px;
+  max-width: 100%;
   flex-shrink: 0;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  border: 1px solid #e5e3db;
+  border-radius: 18px;
+  padding: 22px 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+.hero-category-heading {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.3px;
+}
+
+.hero-category-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.hero-category-badge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 10px;
+  border: 1px solid rgba(226, 232, 240, 0.7);
   border-radius: 14px;
-  padding: 18px 14px;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-.sidebar-categories {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.hero-category-badge-card:hover {
+  transform: translateY(-4px);
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
 }
 
-.sidebar-category-btn {
+.badge-icon-wrap {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 11px 14px;
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: #0f172a;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  text-align: left;
-}
-
-.sidebar-category-btn .cat-icon {
-  color: #2563eb;
-  transition: transform 0.2s ease, color 0.2s ease;
-  flex-shrink: 0;
-}
-
-.sidebar-category-btn:hover {
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   background: #ffffff;
-  border-color: #cbd5e1;
-  color: #2563eb;
-  transform: translateX(4px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.sidebar-category-btn:hover .cat-icon {
-  transform: scale(1.15);
-  color: #1d4ed8;
+.badge-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  text-align: center;
 }
 
 /* Text side */
@@ -96,9 +105,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background-color: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #2563eb;
+  background-color: #ecf3e6;
+  border: 1px solid #d1e5c0;
+  color: #4d7c0f;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -119,7 +128,7 @@
 
 .hero-heading-accent {
   font-style: normal;
-  color: #2563eb;
+  color: #4d7c0f;
 }
 
 .hero-subtext {
@@ -154,9 +163,9 @@
 }
 
 .hero-btn-primary:hover {
-  background-color: #2563eb;
+  background-color: #4d7c0f;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 6px 20px rgba(77, 124, 15, 0.3);
 }
 
 .hero-btn-secondary {
@@ -309,7 +318,7 @@
 .hero-card-float-2 {
   bottom: 30px;
   right: -14px;
-  color: #2563eb;
+  color: #4d7c0f;
 }
 
 /* Offers strip */
@@ -338,8 +347,8 @@
 
 .offer-card:hover {
   transform: translateY(-3px);
-  border-color: #2563eb;
-  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.1);
+  border-color: #4d7c0f;
+  box-shadow: 0 12px 28px rgba(77, 124, 15, 0.1);
 }
 
 .offer-img {
@@ -359,7 +368,7 @@
 .offer-tag {
   font-size: 11px;
   font-weight: 700;
-  color: #2563eb;
+  color: #4d7c0f;
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
@@ -403,9 +412,9 @@
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  background-color: #eff6ff;
-  border: 1px solid #bfdbfe;
-  color: #2563eb;
+  background-color: #ecf3e6;
+  border: 1px solid #d1e5c0;
+  color: #4d7c0f;
   flex-shrink: 0;
 }
 

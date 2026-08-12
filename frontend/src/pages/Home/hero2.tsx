@@ -1,15 +1,14 @@
-
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Zap, Smartphone, Footprints, ShoppingBasket, Shirt, Home as HomeIcon, Sparkles } from "lucide-react";
+import { ArrowRight, Smartphone, Footprints, ShoppingBasket, Shirt, Home as HomeIcon, Sparkles } from "lucide-react";
 import "./Hero2.css";
 
 const CATEGORIES = [
-  { name: "Electronics", icon: Smartphone },
-  { name: "Footwear", icon: Footprints },
-  { name: "Groceries", icon: ShoppingBasket },
-  { name: "Fashion", icon: Shirt },
-  { name: "Home & Living", icon: HomeIcon },
-  { name: "Beauty & Care", icon: Sparkles },
+  { name: "Electronics", icon: Smartphone, bg: "#eff6ff", color: "#4d7c0f" },
+  { name: "Fashion", icon: Shirt, bg: "#fdf2f8", color: "#db2777" },
+  { name: "Groceries", icon: ShoppingBasket, bg: "#f0fdf4", color: "#16a34a" },
+  { name: "Toys & Games", icon: Sparkles, bg: "#fff7ed", color: "#ea580c" },
+  { name: "Footwear", icon: Footprints, bg: "#f3e8ff", color: "#9333ea" },
+  { name: "Home & Living", icon: HomeIcon, bg: "#fef3c7", color: "#d97706" },
 ];
 
 const Hero = () => {
@@ -21,11 +20,6 @@ const Hero = () => {
 
       <div className="hero-content">
         <div className="hero-text">
-          <span className="hero-eyebrow">
-            <Zap size={14} strokeWidth={2.5} />
-            MEGA SALE • LIMITED TIME
-          </span>
-
           <h1 className="hero-heading">
             Deals worth
             <span className="hero-heading-accent"> stopping the scroll </span>
@@ -49,19 +43,23 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Transparent Right Category Sidebar */}
-        <div className="hero-category-sidebar">
-          <div className="sidebar-categories">
+        {/* Category Badges Showcase Grid */}
+        <div className="hero-category-showcase">
+          <h3 className="hero-category-heading">Explore Top Categories</h3>
+          <div className="hero-category-grid">
             {CATEGORIES.map((cat) => {
               const IconComponent = cat.icon;
               return (
                 <button
                   key={cat.name}
-                  className="sidebar-category-btn"
+                  className="hero-category-badge-card"
+                  style={{ backgroundColor: cat.bg }}
                   onClick={() => navigate(`/products?category=${encodeURIComponent(cat.name)}`)}
                 >
-                  <IconComponent size={18} className="cat-icon" />
-                  <span>{cat.name}</span>
+                  <div className="badge-icon-wrap" style={{ color: cat.color }}>
+                    <IconComponent size={20} strokeWidth={2} />
+                  </div>
+                  <span className="badge-name">{cat.name}</span>
                 </button>
               );
             })}

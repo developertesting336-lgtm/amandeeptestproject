@@ -15,10 +15,11 @@ const Home = () => {
       <Hero1 />
       <CategorySection />
       <ProductSection />
+      {/* <FeaturedProducts /> */}
       <VideoSection />
       <PromoBar />
-      <Hero2 />
       <HomeProductsGrid />
+      {/* <Hero2 /> */}
       <OffersTrustSection />
       <Footer />
     </main>

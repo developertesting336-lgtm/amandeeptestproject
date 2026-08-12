@@ -1,7 +1,7 @@
 .hero {
   width: 100%;
   padding: 16px 24px;
-  background-color: #a999991f;
+  background-color: #f4f3ef;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   box-sizing: border-box;
 }
@@ -90,7 +90,7 @@
 .dot.active {
   width: 28px;
   border-radius: 20px;
-  background: #2563eb;
+  background: #4d7c0f;
 }
 
 @media (max-width: 768px) {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShoppingCart, ChevronLeft, ChevronRight, Star, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import "./ProductSection.css";
 
 import product1 from "../../assets/1.jpeg";
@@ -9,7 +9,6 @@ import product3 from "../../assets/3.jpeg";
 import electronicsImg from "../../assets/electronics.jpg";
 import clothImg from "../../assets/cloth.jpg";
 import toyImg from "../../assets/toys.jpg";
-import { useCart } from "../../context/cartContext";
 
 interface DisplayProduct {
   id: string;
@@ -110,7 +109,6 @@ const CATEGORIES = ["All", "Electronics", "Fashion", "Toys"];
 
 const ProductSection = () => {
   const navigate = useNavigate();
-  const { addToCart } = useCart();
 
   const [allProducts, setAllProducts] = useState<DisplayProduct[]>(FALLBACK_PRODUCTS);
   const [activeCategory, setActiveCategory] = useState("All");
@@ -123,11 +121,18 @@ const ProductSection = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      const w = window.innerWidth;
-      if (w <= 520) setCardsPerView(1);
-      else if (w <= 800) setCardsPerView(2);
-      else if (w <= 1100) setCardsPerView(3);
-      else setCardsPerView(4);
+      if (sliderRef.current) {
+        const w = sliderRef.current.parentElement?.clientWidth || window.innerWidth;
+        const count = Math.max(1, Math.floor(w / 205));
+        setCardsPerView(count);
+      } else {
+        const w = window.innerWidth;
+        if (w <= 480) setCardsPerView(1);
+        else if (w <= 680) setCardsPerView(2);
+        else if (w <= 900) setCardsPerView(3);
+        else if (w <= 1120) setCardsPerView(4);
+        else setCardsPerView(5);
+      }
     };
     handleResize();
     window.addEventListener("resize", handleResize);
@@ -148,13 +153,15 @@ const ProductSection = () => {
 
         if (res.ok && Array.isArray(rawList) && rawList.length > 0) {
           const mapped: DisplayProduct[] = rawList.map((item: any) => {
-            const hasSale = typeof item.salePrice === "number" && item.salePrice > 0 && item.salePrice < item.price;
+            const itemPrice = typeof item.price === "number" && item.price > 0 ? item.price : 999;
+            const itemSale = typeof item.salePrice === "number" && item.salePrice > 0 ? item.salePrice : itemPrice;
+            const hasSale = itemSale < itemPrice;
             return {
               id: item._id || item.id,
-              name: item.name,
+              name: item.name || "Product",
               image: formatImageUrl(item.images?.[0], product1),
-              price: hasSale ? item.salePrice : item.price,
-              oldPrice: hasSale ? item.price : item.price,
+              price: hasSale ? itemSale : itemPrice,
+              oldPrice: hasSale ? itemPrice : itemPrice,
               rating: item.rating || 4.5,
               reviewsCount: item.numReviews || 36,
               category:
@@ -176,27 +183,30 @@ const ProductSection = () => {
   const filteredProducts = activeCategory === "All"
     ? allProducts
     : allProducts.filter(
-      (p) => p.category.toLowerCase() === activeCategory.toLowerCase()
-    );
+        (p) => p.category.toLowerCase() === activeCategory.toLowerCase()
+      );
 
   const displayList = filteredProducts.length > 0 ? filteredProducts : allProducts;
   const maxIndex = Math.max(0, displayList.length - cardsPerView);
   const safeIndex = Math.min(currentIndex, maxIndex);
-  const stepPercent = 100 / cardsPerView;
 
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+    if (currentIndex < maxIndex) {
+      setCurrentIndex((prev) => prev + 1);
+    }
   };
 
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
+    if (currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
   };
 
   useEffect(() => {
     if (isPaused || displayList.length === 0 || maxIndex <= 0) return;
 
     const interval = setInterval(() => {
-      nextSlide();
+      setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
     }, 3500);
 
     return () => clearInterval(interval);
@@ -205,11 +215,6 @@ const ProductSection = () => {
   const toggleWishlist = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     setWishlist((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleAddToCart = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    addToCart(id, 1);
   };
 
   const goToProduct = (id: string) => {
@@ -222,7 +227,6 @@ const ProductSection = () => {
         {/* HEADER & CATEGORY TABS */}
         <div className="product-section-header">
           <div className="product-heading-content">
-            <span className="product-section-eyebrow">CURATED COLLECTION</span>
             <h2 className="product-section-title">Featured Products</h2>
           </div>
 
@@ -257,25 +261,25 @@ const ProductSection = () => {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {/* NAVIGATION ARROWS */}
-          {maxIndex > 0 && (
-            <>
-              <button
-                className="product-slider-arrow product-slider-prev"
-                onClick={prevSlide}
-                aria-label="Previous product"
-              >
-                <ChevronLeft size={20} />
-              </button>
+          {/* NAVIGATION ARROWS - ONLY SLIDE IF THERE IS NEXT / PREV PRODUCT */}
+          {safeIndex > 0 && (
+            <button
+              className="product-slider-arrow product-slider-prev"
+              onClick={prevSlide}
+              aria-label="Previous product"
+            >
+              <ChevronLeft size={20} />
+            </button>
+          )}
 
-              <button
-                className="product-slider-arrow product-slider-next"
-                onClick={nextSlide}
-                aria-label="Next product"
-              >
-                <ChevronRight size={20} />
-              </button>
-            </>
+          {safeIndex < maxIndex && (
+            <button
+              className="product-slider-arrow product-slider-next"
+              onClick={nextSlide}
+              aria-label="Next product"
+            >
+              <ChevronRight size={20} />
+            </button>
           )}
 
           {/* VIEWPORT & TRACK */}
@@ -284,15 +288,15 @@ const ProductSection = () => {
               ref={sliderRef}
               className="product-slider-track"
               style={{
-                transform: `translateX(-${safeIndex * stepPercent}%)`,
+                transform: `translateX(-${safeIndex * 205}px)`,
               }}
             >
               {displayList.map((product) => {
                 const discount =
                   product.oldPrice > product.price
                     ? Math.round(
-                      ((product.oldPrice - product.price) / product.oldPrice) * 100
-                    )
+                        ((product.oldPrice - product.price) / product.oldPrice) * 100
+                      )
                     : 0;
 
                 const isWishlisted = !!wishlist[product.id];
@@ -314,13 +318,6 @@ const ProductSection = () => {
                           }}
                         />
 
-                        {/* DISCOUNT TAG */}
-                        {discount > 0 && (
-                          <span className="product-discount-badge">
-                            -{discount}%
-                          </span>
-                        )}
-
                         {/* WISHLIST BUTTON */}
                         <button
                           className={`product-wishlist-btn ${isWishlisted ? "active" : ""}`}
@@ -339,10 +336,11 @@ const ProductSection = () => {
                       <div className="product-info">
                         <div className="product-meta-row">
                           <span className="product-category">{product.category}</span>
-                          <div className="product-rating">
-                            <Star size={12} fill="#f59e0b" color="#f59e0b" />
-                            <span>{product.rating}</span>
-                          </div>
+                          {discount > 0 && (
+                            <span className="product-discount-badge">
+                              -{discount}%
+                            </span>
+                          )}
                         </div>
 
                         <h3 className="product-name">{product.name}</h3>
@@ -350,23 +348,14 @@ const ProductSection = () => {
                         <div className="product-bottom-row">
                           <div className="product-price-row">
                             <span className="product-price">
-                              ₹{product.price.toLocaleString("en-IN")}
+                              ₹{(product.price || 0).toLocaleString("en-IN")}
                             </span>
-                            {product.oldPrice > product.price && (
+                            {typeof product.oldPrice === "number" && product.oldPrice > product.price && (
                               <span className="product-old-price">
                                 ₹{product.oldPrice.toLocaleString("en-IN")}
                               </span>
                             )}
                           </div>
-
-                          <button
-                            className="product-inline-cart-btn"
-                            onClick={(e) => handleAddToCart(e, product.id)}
-                            aria-label={`Add ${product.name} to cart`}
-                          >
-                            <ShoppingCart size={14} />
-                            <span>Add to Cart</span>
-                          </button>
                         </div>
                       </div>
                     </article>
