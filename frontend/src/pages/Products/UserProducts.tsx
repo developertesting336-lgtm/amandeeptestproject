@@ -299,9 +299,7 @@ const UserProducts = () => {
       const cleanSubcat = subcatName.toLowerCase().replace(/[^a-z0-9]/g, "");
       const cleanSelected = selectedCategory.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-      // -------------------------------------------------
-      // CATEGORY FILTER
-      // -------------------------------------------------
+
 
       const matchesCat =
         selectedCategory === "all" ||
@@ -313,9 +311,7 @@ const UserProducts = () => {
       return matchesCat;
     })
     .sort((a, b) => {
-      // -------------------------------------------------
-      // PRICE
-      // -------------------------------------------------
+
 
       const priceA =
         a.salePrice !== null &&

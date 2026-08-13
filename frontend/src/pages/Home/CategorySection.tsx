@@ -11,16 +11,17 @@ import grosaryImg from "../../assets/categories_products/groccery.png";
 interface Category {
   _id: string;
   name: string;
+  search: string;
   slug?: string;
   description?: string;
   image?: string;
 }
 
 const FALLBACK_CATEGORIES: Category[] = [
-  { _id: "c1", name: "Electronics", slug: "electronics", image: electronicsImg },
-  { _id: "c2", name: "Fashion & Apparel", slug: "fashion", image: clothImg },
-  { _id: "c3", name: "Grocery & Essentials", slug: "grocery", image: grosaryImg },
-  { _id: "c4", name: "Toys & Games", slug: "toys", image: toyImg },
+  { _id: "c1", name: "Electronics", search: "Electronics", slug: "electronics", image: electronicsImg },
+  { _id: "c2", name: "Fashion & Apparel", search: "Fashion", slug: "fashion", image: clothImg },
+  { _id: "c3", name: "Grocery & Essentials", search: "Grocery", slug: "grocery", image: grosaryImg },
+  { _id: "c4", name: "Toys & Games", search: "toys & Games", slug: "toys", image: toyImg },
 ];
 
 const getFallbackImage = (name: string, index: number) => {
@@ -53,6 +54,7 @@ const CategorySection = () => {
         const res = await fetch(`${API_BASE_URL}/api/categories`);
         const result = await res.json();
         const rawList = result.data || result.categories || (Array.isArray(result) ? result : []);
+        console.log(rawList)
 
         if (res.ok && Array.isArray(rawList) && rawList.length > 0) {
           setCategories(rawList);
@@ -63,6 +65,7 @@ const CategorySection = () => {
     };
 
     fetchCategories();
+
   }, []);
 
   const handleCategoryClick = (categoryName: string) => {
@@ -106,7 +109,7 @@ const CategorySection = () => {
               <div
                 key={cat._id || index}
                 className="category-card"
-                onClick={() => handleCategoryClick(cat.name)}
+                onClick={() => handleCategoryClick(cat.search)}
               >
                 {/* IMAGE BANNER CONTAINER */}
                 <div className="category-img-wrap">

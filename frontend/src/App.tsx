@@ -1,6 +1,7 @@
 import Navbar from "./components/layout/Navbar/Navbar";
 import Home from "./pages/Home/Home";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import About from "./pages/About/About";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
@@ -19,9 +20,21 @@ import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import TermsConditions from "./pages/Legal/TermsConditions";
 import ShippingPolicy from "./pages/Legal/ShippingPolicy";
 
+// ScrollToTop component to reset scroll position on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
+
+  return null;
+};
+
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Navbar />
 
       <Routes>

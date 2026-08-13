@@ -3,8 +3,8 @@
   width: 100%;
   padding: 18px 0;
   background-color: #f7f6f3;
-  border-top: 1px solid #050505;
-  border-bottom: 1px solid #000000;
+  border-top: 0.3px solid #cbcbcb;
+  border-bottom: 0.2px solid #cbcbcb;
   box-sizing: border-box;
 }
 
