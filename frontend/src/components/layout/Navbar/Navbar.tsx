@@ -23,11 +23,16 @@ const Navbar = () => {
     navigate("/login");
   };
 
+  // Live search triggering navigate on searchQuery change
   useEffect(() => {
-    if (!searchQuery.trim()) return;
-
-    navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
-    closeMenu();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      // If search query is emptied (e.g. backspaced all text), reset URL to /products to show all products
+      if (window.location.pathname.startsWith("/products") && window.location.search.includes("search=")) {
+        navigate("/products");
+      }
+    }
   }, [searchQuery]);
 
   return (
@@ -39,7 +44,21 @@ const Navbar = () => {
           <span className="brand-name">Shopora</span>
         </Link>
 
-        {/* Hamburger */}
+        {/* ALWAYS VISIBLE SEARCH BAR ON NAVBAR */}
+        <form className="search-form" onSubmit={(e) => e.preventDefault()}>
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button type="submit" className="search-btn" aria-label="Search">
+            <Search size={16} strokeWidth={2} />
+          </button>
+        </form>
+
+        {/* Mobile Hamburger Toggle */}
         <button
           type="button"
           className={`menu-toggle ${menuOpen ? "active" : ""}`}
@@ -47,25 +66,11 @@ const Navbar = () => {
           aria-label="Toggle navigation"
           aria-expanded={menuOpen}
         >
-          {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
 
-        {/* Navigation */}
+        {/* Navigation Menu */}
         <nav className={`navbar-menu ${menuOpen ? "open" : ""}`}>
-          {/* Search */}
-          <form className="search-form">
-            <input
-              type="text"
-              className="search-input"
-              placeholder="Search for products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button type="submit" className="search-btn" aria-label="Search">
-              <Search size={16} strokeWidth={2} />
-            </button>
-          </form>
-
           {/* Common Links */}
           <Link to="/" className="navbar-link" onClick={closeMenu}>
             Home

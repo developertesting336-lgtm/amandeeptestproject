@@ -14,13 +14,14 @@
 
 .navbar-container {
   width: 100%;
-  max-width: 100%;
+  max-width: 1380px;
   margin: 0 auto;
-  padding: 0 3.5%;
+  padding: 0 20px;
   height: 72px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   box-sizing: border-box;
 }
 
@@ -28,20 +29,20 @@
 .navbar-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-decoration: none;
   flex-shrink: 0;
 }
 
 .logo {
-  height: 42px;
+  height: 38px;
   width: auto;
   object-fit: contain;
 }
 
 .brand-name {
   font-family: 'Inter', sans-serif;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
   color: #0f172a;
   letter-spacing: -0.5px;
@@ -49,55 +50,29 @@
 }
 
 .navbar-logo:hover .brand-name {
-  color: #2563eb;
+  color: #7257c2;
 }
 
-/* Hamburger */
-.menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  color: #0f172a;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu-toggle:hover {
-  background-color: #f1f5f9;
-}
-
-/* Nav links container */
-.navbar-menu {
-  display: flex;
-  align-items: center;
-  gap: clamp(10px, 1.3vw, 20px);
-  flex: 1;
-  justify-content: flex-end;
-  margin-left: 20px;
-  min-width: 0;
-}
-
-/* Search */
+/* ALWAYS VISIBLE NAVBAR SEARCH FORM */
 .search-form {
   display: flex;
   align-items: center;
   flex: 1;
-  max-width: clamp(180px, 20vw, 360px);
+  max-width: 360px;
+  min-width: 110px;
   background-color: #f8fafc;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   overflow: hidden;
+  margin: 0 12px;
   flex-shrink: 1;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .search-form:focus-within {
-  border-color: #2563eb;
+  border-color: #7257c2;
   background-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 0 0 3px rgba(114, 87, 194, 0.12);
 }
 
 .search-input {
@@ -107,8 +82,8 @@
   border: none;
   outline: none;
   color: #0f172a;
-  font-size: 14px;
-  padding: 9px 14px;
+  font-size: 13.5px;
+  padding: 8px 12px;
   font-family: 'Inter', sans-serif;
 }
 
@@ -123,14 +98,41 @@
   background-color: #0f172a;
   border: none;
   color: #ffffff;
-  padding: 10px 16px;
+  padding: 9px 14px;
   cursor: pointer;
   flex-shrink: 0;
   transition: background-color 0.15s ease;
 }
 
 .search-btn:hover {
-  background-color: #2563eb;
+  background-color: #7257c2;
+}
+
+/* Hamburger */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #0f172a;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.menu-toggle:hover {
+  background-color: #f1f5f9;
+}
+
+/* Nav links container */
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.3vw, 20px);
+  justify-content: flex-end;
+  min-width: 0;
 }
 
 .navbar-link {
@@ -144,7 +146,7 @@
 }
 
 .navbar-link:hover {
-  color: #2563eb;
+  color: #7257c2;
 }
 
 .navbar-icon-link {
@@ -160,15 +162,15 @@
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
-  padding: 9px 20px;
+  padding: 8px 18px;
   border-radius: 8px;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .register-btn:hover {
-  background-color: #2563eb;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  background-color: #7257c2;
+  box-shadow: 0 4px 12px rgba(114, 87, 194, 0.25);
 }
 
 /* Logout button */
@@ -190,15 +192,27 @@
   color: #0f172a;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 1250px) {
+/* ===== Responsive Breakpoints ===== */
+
+@media (max-width: 1024px) {
+  .navbar-container {
+    height: 64px;
+    padding: 0 14px;
+    gap: 8px;
+  }
+
   .menu-toggle {
     display: flex;
   }
 
+  .search-form {
+    max-width: 240px;
+    margin: 0 6px;
+  }
+
   .navbar-menu {
     position: absolute;
-    top: 72px;
+    top: 64px;
     left: 0;
     right: 0;
     background-color: #ffffff;
@@ -247,10 +261,29 @@
   .navbar-icon-link {
     justify-content: flex-start;
   }
+}
 
+@media (max-width: 600px) {
   .search-form {
-    width: 100%;
-    max-width: none;
-    margin: 10px 0;
+    max-width: 180px;
+    margin: 0 4px;
   }
-}
+
+  .search-input {
+    font-size: 12.5px;
+    padding: 6px 8px;
+  }
+
+  .search-btn {
+    padding: 7px 10px;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand-name {
+    display: none;
+  }
+  .search-form {
+    max-width: 150px;
+  }
+}

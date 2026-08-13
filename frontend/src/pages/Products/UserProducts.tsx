@@ -152,6 +152,8 @@ const UserProducts = () => {
 
     if (searchParam) {
       setSearchQuery(searchParam);
+    } else {
+      setSearchQuery("");
     }
   }, [searchParams]);
 
