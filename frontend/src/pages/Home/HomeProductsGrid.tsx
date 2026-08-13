@@ -81,9 +81,26 @@ const HomeProductsGrid = () => {
     return (
       <section className="home-products-section">
         <div className="home-products-container">
-          <p style={{ color: "#683d0a", textAlign: "center", padding: "40px 0", fontWeight: 500 }}>
-            Loading products...
-          </p>
+          <div className="home-products-header">
+            <div>
+              <h2 className="home-products-title">Our Premium Catalog</h2>
+            </div>
+            <Link to="/products" className="home-explore-btn-top">
+              Explore All Products <ArrowRight size={16} />
+            </Link>
+          </div>
+
+          <div className="home-products-grid">
+            {Array.from({ length: 12 }).map((_, idx) => (
+              <div key={idx} className="home-product-skeleton-card">
+                <div className="skeleton-image" />
+                <div className="skeleton-pill" />
+                <div className="skeleton-title" />
+                <div className="skeleton-title-short" />
+                <div className="skeleton-price" />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     );

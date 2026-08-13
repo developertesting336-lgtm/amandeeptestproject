@@ -4,11 +4,6 @@ import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import "./ProductSection.css";
 
 import product1 from "../../assets/1.jpeg";
-import product2 from "../../assets/2.jpeg";
-import product3 from "../../assets/3.jpeg";
-import electronicsImg from "../../assets/electronics.jpg";
-import clothImg from "../../assets/cloth.jpg";
-import toyImg from "../../assets/toys.jpg";
 
 interface DisplayProduct {
   id: string;
@@ -20,69 +15,6 @@ interface DisplayProduct {
   reviewsCount?: number;
   category: string;
 }
-
-const FALLBACK_PRODUCTS: DisplayProduct[] = [
-  {
-    id: "p1",
-    name: "Wireless Over-Ear Noise Cancelling Headphones",
-    image: product1,
-    price: 4999,
-    oldPrice: 7999,
-    rating: 4.8,
-    reviewsCount: 128,
-    category: "Electronics",
-  },
-  {
-    id: "p2",
-    name: "Premium Everyday Cotton Casual T-Shirt",
-    image: product2,
-    price: 999,
-    oldPrice: 1499,
-    rating: 4.5,
-    reviewsCount: 84,
-    category: "Fashion",
-  },
-  {
-    id: "p3",
-    name: "Smart Fitness Watch with AMOLED Display",
-    image: product3,
-    price: 3499,
-    oldPrice: 5999,
-    rating: 4.7,
-    reviewsCount: 210,
-    category: "Electronics",
-  },
-  {
-    id: "p4",
-    name: "Kids Educational Creative Building Blocks Set",
-    image: toyImg,
-    price: 1299,
-    oldPrice: 1999,
-    rating: 4.6,
-    reviewsCount: 65,
-    category: "Toys",
-  },
-  {
-    id: "p5",
-    name: "Portable Outdoor Waterproof Bluetooth Speaker",
-    image: electronicsImg,
-    price: 2499,
-    oldPrice: 3999,
-    rating: 4.4,
-    reviewsCount: 92,
-    category: "Electronics",
-  },
-  {
-    id: "p6",
-    name: "Classic Heavyweight Denim Jacket",
-    image: clothImg,
-    price: 2999,
-    oldPrice: 4499,
-    rating: 4.3,
-    reviewsCount: 45,
-    category: "Fashion",
-  },
-];
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
@@ -106,43 +38,43 @@ const formatImageUrl = (image: any, fallback: string = product1): string => {
 };
 
 const CATEGORIES = ["All", "Electronics", "Fashion", "Toys"];
+const CARD_WIDTH = 205; // 205px per slide container
 
 const ProductSection = () => {
   const navigate = useNavigate();
 
-  const [allProducts, setAllProducts] = useState<DisplayProduct[]>(FALLBACK_PRODUCTS);
+  const [allProducts, setAllProducts] = useState<DisplayProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
-  const [cardsPerView, setCardsPerView] = useState(4);
+  const [viewportWidth, setViewportWidth] = useState(0);
 
-  const sliderRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
+  // Measure slider viewport width dynamically
   useEffect(() => {
-    const handleResize = () => {
-      if (sliderRef.current) {
-        const w = sliderRef.current.parentElement?.clientWidth || window.innerWidth;
-        const count = Math.max(1, Math.floor(w / 205));
-        setCardsPerView(count);
-      } else {
-        const w = window.innerWidth;
-        if (w <= 480) setCardsPerView(1);
-        else if (w <= 680) setCardsPerView(2);
-        else if (w <= 900) setCardsPerView(3);
-        else if (w <= 1120) setCardsPerView(4);
-        else setCardsPerView(5);
+    const updateViewportWidth = () => {
+      if (viewportRef.current) {
+        setViewportWidth(viewportRef.current.clientWidth);
       }
     };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    updateViewportWidth();
+    window.addEventListener("resize", updateViewportWidth);
+    return () => window.removeEventListener("resize", updateViewportWidth);
   }, []);
 
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
+        setLoading(true);
         const res = await fetch(`${API_BASE_URL}/api/featured`);
+        if (!res.ok) {
+          setAllProducts([]);
+          return;
+        }
         const result = await res.json();
 
         const rawList =
@@ -151,7 +83,7 @@ const ProductSection = () => {
           result.products ||
           (Array.isArray(result) ? result : []);
 
-        if (res.ok && Array.isArray(rawList) && rawList.length > 0) {
+        if (Array.isArray(rawList) && rawList.length > 0) {
           const mapped: DisplayProduct[] = rawList.map((item: any) => {
             const itemPrice = typeof item.price === "number" && item.price > 0 ? item.price : 999;
             const itemSale = typeof item.salePrice === "number" && item.salePrice > 0 ? item.salePrice : itemPrice;
@@ -171,46 +103,60 @@ const ProductSection = () => {
             };
           });
           setAllProducts(mapped);
+        } else {
+          setAllProducts([]);
         }
       } catch (err) {
-        console.log("Using fallback products for home slider:", err);
+        console.error("Featured products fetch error:", err);
+        setAllProducts([]);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchFeaturedProducts();
   }, []);
 
-  const filteredProducts = activeCategory === "All"
+  const displayList = activeCategory === "All"
     ? allProducts
     : allProducts.filter(
-        (p) => p.category.toLowerCase() === activeCategory.toLowerCase()
-      );
+      (p) => p.category.toLowerCase() === activeCategory.toLowerCase()
+    );
 
-  const displayList = filteredProducts.length > 0 ? filteredProducts : allProducts;
-  const maxIndex = Math.max(0, displayList.length - cardsPerView);
+  // Calculate precise max scroll distance and maximum slide index
+  const totalTrackWidth = displayList.length * CARD_WIDTH;
+  const maxScrollPx = viewportWidth > 0 ? Math.max(0, totalTrackWidth - viewportWidth) : 0;
+  const maxIndex = maxScrollPx > 0 ? Math.ceil(maxScrollPx / CARD_WIDTH) : 0;
   const safeIndex = Math.min(currentIndex, maxIndex);
 
+  // Clamp translation so the last product aligns flush with the right edge with ZERO empty space
+  const currentTranslateX = Math.min(safeIndex * CARD_WIDTH, maxScrollPx);
+
   const nextSlide = () => {
-    if (currentIndex < maxIndex) {
+    if (currentTranslateX < maxScrollPx) {
       setCurrentIndex((prev) => prev + 1);
     }
   };
 
   const prevSlide = () => {
-    if (currentIndex > 0) {
+    if (safeIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
     }
   };
 
+  // Auto-play interval
   useEffect(() => {
-    if (isPaused || displayList.length === 0 || maxIndex <= 0) return;
+    if (isPaused || loading || displayList.length === 0 || maxScrollPx <= 0) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
+      setCurrentIndex((prev) => {
+        const nextIdx = prev + 1;
+        return nextIdx * CARD_WIDTH > maxScrollPx ? 0 : nextIdx;
+      });
     }, 3500);
 
     return () => clearInterval(interval);
-  }, [isPaused, displayList.length, maxIndex]);
+  }, [isPaused, loading, displayList.length, maxScrollPx]);
 
   const toggleWishlist = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -261,8 +207,8 @@ const ProductSection = () => {
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          {/* NAVIGATION ARROWS - ONLY SLIDE IF THERE IS NEXT / PREV PRODUCT */}
-          {safeIndex > 0 && (
+          {/* NAVIGATION ARROWS - ONLY SHOWN IF THERE IS SCROLLABLE CONTENT */}
+          {!loading && safeIndex > 0 && maxScrollPx > 0 && (
             <button
               className="product-slider-arrow product-slider-prev"
               onClick={prevSlide}
@@ -272,7 +218,7 @@ const ProductSection = () => {
             </button>
           )}
 
-          {safeIndex < maxIndex && (
+          {!loading && currentTranslateX < maxScrollPx && maxScrollPx > 0 && (
             <button
               className="product-slider-arrow product-slider-next"
               onClick={nextSlide}
@@ -283,91 +229,111 @@ const ProductSection = () => {
           )}
 
           {/* VIEWPORT & TRACK */}
-          <div className="product-slider-viewport">
-            <div
-              ref={sliderRef}
-              className="product-slider-track"
-              style={{
-                transform: `translateX(-${safeIndex * 205}px)`,
-              }}
-            >
-              {displayList.map((product) => {
-                const discount =
-                  product.oldPrice > product.price
-                    ? Math.round(
+          <div className="product-slider-viewport" ref={viewportRef}>
+            {loading ? (
+              /* SKELETON SHIMMER LOADING CARDS */
+              <div className="product-slider-track">
+                {Array.from({ length: 6 }).map((_, idx) => (
+                  <div key={idx} className="product-slide">
+                    <div className="product-skeleton-card">
+                      <div className="skeleton-image" />
+                      <div className="skeleton-pill" />
+                      <div className="skeleton-title" />
+                      <div className="skeleton-title-short" />
+                      <div className="skeleton-price" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : displayList.length === 0 ? (
+              <div style={{ padding: "40px 20px", textAlign: "center", color: "#64748b" }}>
+                <p>No featured products found in {activeCategory}.</p>
+              </div>
+            ) : (
+              <div
+                className="product-slider-track"
+                style={{
+                  transform: `translateX(-${currentTranslateX}px)`,
+                }}
+              >
+                {displayList.map((product) => {
+                  const discount =
+                    product.oldPrice > product.price
+                      ? Math.round(
                         ((product.oldPrice - product.price) / product.oldPrice) * 100
                       )
-                    : 0;
+                      : 0;
 
-                const isWishlisted = !!wishlist[product.id];
+                  const isWishlisted = !!wishlist[product.id];
 
-                return (
-                  <div key={product.id} className="product-slide">
-                    <article
-                      className="product-card"
-                      onClick={() => goToProduct(product.id)}
-                    >
-                      {/* IMAGE CONTAINER */}
-                      <div className="product-image-wrap">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="product-image-slider"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).src = product1;
-                          }}
-                        />
-
-                        {/* WISHLIST BUTTON */}
-                        <button
-                          className={`product-wishlist-btn ${isWishlisted ? "active" : ""}`}
-                          onClick={(e) => toggleWishlist(e, product.id)}
-                          aria-label="Wishlist product"
-                        >
-                          <Heart
-                            size={15}
-                            fill={isWishlisted ? "#dc2626" : "none"}
-                            color={isWishlisted ? "#dc2626" : "#64748b"}
+                  return (
+                    <div key={product.id} className="product-slide">
+                      <article
+                        className="product-card"
+                        onClick={() => goToProduct(product.id)}
+                      >
+                        {/* IMAGE CONTAINER */}
+                        <div className="product-image-wrap">
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="product-image-slider"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = product1;
+                            }}
                           />
-                        </button>
-                      </div>
 
-                      {/* PRODUCT DETAILS */}
-                      <div className="product-info">
-                        <div className="product-meta-row">
-                          <span className="product-category">{product.category}</span>
-                          {discount > 0 && (
-                            <span className="product-discount-badge">
-                              -{discount}%
-                            </span>
-                          )}
+                          {/* WISHLIST BUTTON */}
+                          <button
+                            className={`product-wishlist-btn ${isWishlisted ? "active" : ""}`}
+                            onClick={(e) => toggleWishlist(e, product.id)}
+                            aria-label="Wishlist product"
+                          >
+                            <Heart
+                              size={15}
+                              fill={isWishlisted ? "#dc2626" : "none"}
+                              color={isWishlisted ? "#dc2626" : "#64748b"}
+                            />
+                          </button>
                         </div>
 
-                        <h3 className="product-name">{product.name}</h3>
-
-                        <div className="product-bottom-row">
-                          <div className="product-price-row">
-                            <span className="product-price">
-                              ₹{(product.price || 0).toLocaleString("en-IN")}
-                            </span>
-                            {typeof product.oldPrice === "number" && product.oldPrice > product.price && (
-                              <span className="product-old-price">
-                                ₹{product.oldPrice.toLocaleString("en-IN")}
+                        {/* PRODUCT DETAILS */}
+                        <div className="product-info">
+                          <div className="product-meta-row">
+                            <span className="product-category">{product.category}</span>
+                            {discount > 0 && (
+                              <span className="product-discount-badge">
+                                -{discount}%
                               </span>
                             )}
                           </div>
+
+                          <h3 className="product-name">{product.name}</h3>
+
+                          <div className="product-bottom-row">
+                            <div className="product-price-row">
+                              <span className="product-price">
+                                ₹{(product.price || 0).toLocaleString("en-IN")}
+                              </span>
+                              {typeof product.oldPrice === "number" && product.oldPrice > product.price && (
+                                <span className="product-old-price">
+                                  ₹{product.oldPrice.toLocaleString("en-IN")}
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </article>
-                  </div>
-                );
-              })}
-            </div>
+                      </article>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
         {/* SLIDER DOTS */}
-        {maxIndex > 0 && (
+        {!loading && maxIndex > 0 && maxScrollPx > 0 && (
           <div className="product-slider-dots">
             {Array.from({ length: maxIndex + 1 }).map((_, index) => (
               <button

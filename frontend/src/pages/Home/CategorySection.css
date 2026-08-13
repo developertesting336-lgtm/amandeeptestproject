@@ -1,35 +1,39 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* =====================================================
-   CATEGORIES SHOWCASE SECTION - THEMED BANNER BG & TEXT BELOW
+   CATEGORIES SHOWCASE SECTION - FLUID FLEXBOX LAYOUT
 ===================================================== */
 .category-section {
   width: 100%;
-  padding: 20px 5% 24px;
+  padding: 24px 3.5% 32px;
   background-color: #eeebe3;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   box-sizing: border-box;
 }
 
 .category-container {
-  max-width: 1350px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(16px, 2vw, 24px);
+  box-sizing: border-box;
 }
 
 .category-section-header {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e3db;
 }
 
 .category-eyebrow {
   display: inline-block;
   margin-bottom: 4px;
   color: #7257c2;
-  font-size: 11px;
+  font-size: clamp(0.65rem, 0.9vw, 0.75rem);
   font-weight: 800;
   letter-spacing: 1.6px;
   text-transform: uppercase;
@@ -39,20 +43,26 @@
   margin: 0;
   color: #0f172a;
   font-family: 'Inter', sans-serif;
-  font-size: 28px;
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
   font-weight: 800;
   letter-spacing: -0.5px;
+  line-height: 1.2;
 }
 
+/* FLEXBOX CATEGORY SHOWCASE GRID */
+
 .category-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(12px, 1.8vw, 24px);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .category-card {
+  flex: 1 1 calc(25% - clamp(12px, 1.8vw, 24px));
+  min-width: 220px;
   position: relative;
-  width: 100%;
   background: transparent;
   border: none !important;
   border-radius: 0;
@@ -60,6 +70,7 @@
   box-shadow: none !important;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
   transform: translateY(0);
   transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -68,12 +79,12 @@
   transform: translateY(-5px);
 }
 
-/* BANNER IMAGE CONTAINER - TRANSPARENT WITHOUT BORDER OR BG */
+/* RESPONSIVE BANNER IMAGE CONTAINER */
 
 .category-img-wrap {
   position: relative;
   width: 100%;
-  height: 230px;
+  height: clamp(160px, 16vw, 230px);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -94,7 +105,6 @@
   width: 100%;
   height: 100%;
   max-width: 100%;
-  max-height: 200px;
   object-fit: contain;
   display: block;
   margin: 0 auto;
@@ -109,11 +119,11 @@
 /* TEXT DETAILS BELOW CONTAINER */
 
 .category-info {
-  padding: 8px 2px 0;
+  padding: clamp(6px, 1vw, 10px) 2px 0;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 1px;
+  gap: 2px;
   box-sizing: border-box;
 }
 
@@ -121,7 +131,7 @@
   margin: 0;
   color: #0f172a;
   font-family: 'Inter', sans-serif;
-  font-size: 16px;
+  font-size: clamp(0.95rem, 1.2vw, 1.15rem);
   font-weight: 800;
   line-height: 1.3;
   transition: color 0.25s ease;
@@ -133,7 +143,7 @@
 
 .category-action-link {
   color: #64748b;
-  font-size: 12.5px;
+  font-size: clamp(0.75rem, 0.95vw, 0.85rem);
   font-weight: 600;
   display: inline-flex;
   align-items: center;
@@ -146,56 +156,22 @@
   gap: 6px;
 }
 
-/* Responsive Media Queries */
-@media (max-width: 1200px) {
-  .category-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-  }
-
-  .category-img-wrap {
-    height: 200px;
-  }
-
-  .category-img {
-    max-height: 175px;
-  }
-}
+/* RESPONSIVE FLEX BREAKPOINTS */
 
 @media (max-width: 992px) {
-  .category-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  .category-img-wrap {
-    height: 210px;
-  }
-
-  .category-img {
-    max-height: 185px;
+  .category-card {
+    flex: 1 1 calc(50% - clamp(10px, 1.5vw, 16px));
+    min-width: 180px;
   }
 }
 
-@media (max-width: 580px) {
-  .category-section {
-    padding: 16px 3.5% 20px;
-  }
-
-  .category-title {
-    font-size: 22px;
-  }
-
-  .category-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+@media (max-width: 520px) {
+  .category-card {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 140px;
   }
 
   .category-img-wrap {
-    height: 170px;
-  }
-
-  .category-img {
-    max-height: 148px;
+    height: clamp(130px, 35vw, 170px);
   }
 }

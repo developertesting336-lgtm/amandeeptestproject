@@ -25,17 +25,22 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
+html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden !important;
   background-color: #ffffff;
   color: #0f172a;
   font-family: var(--sans);
+  box-sizing: border-box;
 }
 
 #root {
   width: 100%;
-  max-width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden !important;
   margin: 0;
   padding: 0;
   text-align: left;

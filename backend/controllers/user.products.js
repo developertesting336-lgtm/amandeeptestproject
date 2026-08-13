@@ -3,10 +3,6 @@ import Product from "../models/Product.js";
 import Category from "../models/Category.js";
 
 
-// =====================================================
-// GET PRODUCTS
-// GET /api/products
-// =====================================================
 
 export const getProducts = async (req, res) => {
   try {
@@ -24,58 +20,66 @@ export const getProducts = async (req, res) => {
     } = req.query;
 
 
-    // =================================================
-    // BASE FILTER
-    // =================================================
+
 
     const filter = {
       isActive: true,
     };
 
 
-    // =================================================
-    // SEARCH
-    // =================================================
+
+    // console.log(search)
+    // console.log(search.trim())
 
     if (search && search.trim()) {
       const searchValue = search.trim();
+      const escapedSearch = searchValue.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+
+
+      const matchingCategories = await Category.find({
+        name: { $regex: escapedSearch, $options: "i" },
+        isActive: true,
+      }).select("_id");
+
+      const categoryIds = matchingCategories.map((c) => c._id);
 
       filter.$or = [
         {
           name: {
-            $regex: searchValue,
+            $regex: escapedSearch,
             $options: "i",
           },
         },
         {
           brand: {
-            $regex: searchValue,
-            $options: "i",
-          },
-        },
-        {
-          sku: {
-            $regex: searchValue,
-            $options: "i",
-          },
-        },
-        {
-          short_description: {
-            $regex: searchValue,
+
+            $regex: `\\b${escapedSearch}`,
             $options: "i",
           },
         },
       ];
+
+      if (categoryIds.length > 0) {
+        filter.$or.push({
+          category: { $in: categoryIds },
+        });
+      }
     }
 
+    console.log(search)
 
-    // =================================================
-    // CATEGORY
-    // =================================================
 
-    if (category) {
+
+    if (category && category !== "all") {
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(category);
+      const escapedCategory = category.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+
       const categoryDoc = await Category.findOne({
-        _id: category,
+        $or: [
+          ...(isObjectId ? [{ _id: category }] : []),
+          { name: { $regex: `^${escapedCategory}$`, $options: "i" } },
+          { slug: category.toLowerCase() },
+        ],
         parent: null,
         isActive: true,
       }).select("_id");
@@ -91,26 +95,28 @@ export const getProducts = async (req, res) => {
     }
 
 
-    // =================================================
-    // SUBCATEGORY
-    // =================================================
 
     if (subcategory) {
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(subcategory);
+      const escapedSubcat = subcategory.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+
       const subcategoryDoc = await Category.findOne({
-        _id: subcategory,
+        $or: [
+          ...(isObjectId ? [{ _id: subcategory }] : []),
+          { name: { $regex: `^${escapedSubcat}$`, $options: "i" } },
+          { slug: subcategory.toLowerCase() },
+        ],
         parent: { $ne: null },
         isActive: true,
       }).select("_id parent");
 
       if (!subcategoryDoc) {
-        return res.status(404).json({
+        return res.status(400).json({
           success: false,
           message: "Subcategory not found",
         });
       }
 
-      // If category is also selected, make sure
-      // subcategory belongs to that category.
       if (
         filter.category &&
         String(subcategoryDoc.parent) !==
@@ -127,13 +133,11 @@ export const getProducts = async (req, res) => {
     }
 
 
-    // =================================================
-    // BRAND
-    // =================================================
 
     if (brand && brand.trim()) {
+      const escapedBrand = brand.trim().replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
       filter.brand = {
-        $regex: brand.trim(),
+        $regex: `\\b${escapedBrand}`,
         $options: "i",
       };
     }
@@ -210,18 +214,21 @@ export const getProducts = async (req, res) => {
 
     switch (sort) {
       case "price_asc":
+      case "price-low":
         sortOption = {
           price: 1,
         };
         break;
 
       case "price_desc":
+      case "price-high":
         sortOption = {
           price: -1,
         };
         break;
 
       case "name_asc":
+      case "name":
         sortOption = {
           name: 1,
         };
@@ -239,6 +246,7 @@ export const getProducts = async (req, res) => {
         };
         break;
 
+      case "featured":
       case "newest":
       default:
         sortOption = {

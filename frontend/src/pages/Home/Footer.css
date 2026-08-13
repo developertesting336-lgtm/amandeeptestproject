@@ -14,10 +14,11 @@
 ========================================= */
 
 .footer-container {
-  width: 90%;
-  max-width: 1350px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 60px 0 50px;
+  padding: 60px 3.5% 50px;
+  box-sizing: border-box;
   display: grid;
   grid-template-columns:
     1.5fr

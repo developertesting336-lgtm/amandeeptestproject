@@ -2,14 +2,15 @@
 
 .offers-trust-section {
   background-color: #f4f3ef;
-  padding: 50px 5% 60px;
+  padding: 50px 3.5% 60px;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   border-top: 1px solid #e5e3db;
   box-sizing: border-box;
 }
 
 .offers-trust-container {
-  max-width: 1350px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
 }
 

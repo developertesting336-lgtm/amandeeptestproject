@@ -1,6 +1,6 @@
 .video-section {
   width: 100%;
-  padding: 30px 5% 35px;
+  padding: 30px 3.5% 35px;
   background-color: #eeebe3;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   box-sizing: border-box;
@@ -8,7 +8,8 @@
 }
 
 .video-section-wrapper {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
