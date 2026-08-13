@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/authContext";
 import { useCart } from "../../../context/cartContext";
@@ -23,12 +23,12 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
     if (!searchQuery.trim()) return;
+
     navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
     closeMenu();
-  };
+  }, [searchQuery]);
 
   return (
     <header className="navbar">
@@ -53,7 +53,7 @@ const Navbar = () => {
         {/* Navigation */}
         <nav className={`navbar-menu ${menuOpen ? "open" : ""}`}>
           {/* Search */}
-          <form className="search-form" onSubmit={handleSearchSubmit}>
+          <form className="search-form">
             <input
               type="text"
               className="search-input"

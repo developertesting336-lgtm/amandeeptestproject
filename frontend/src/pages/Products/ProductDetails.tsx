@@ -94,7 +94,6 @@ const ProductDetails = () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
         let res = await fetch(`${API_BASE_URL}/api/admin/product/${productId}`, {
@@ -222,7 +221,7 @@ const ProductDetails = () => {
   }
 
   const currentPrice = product.salePrice ? product.salePrice : product.price;
-  const hasDiscount = product.salePrice && product.salePrice < product.price;
+  const hasDiscount = Boolean(product.salePrice && product.salePrice < product.price);
 
   const rawImages = product.images && product.images.length > 0
     ? product.images.map((img) => formatImageUrl(img, "")).filter(Boolean)
@@ -231,8 +230,20 @@ const ProductDetails = () => {
   const imagesList = rawImages.length > 0 ? rawImages : [product1];
   const mainImage = imagesList[selectedImgIndex] || imagesList[0];
 
-  const categoryName = typeof product.category === "object" && product.category !== null ? product.category.name : product.category;
-  const subcategoryName = typeof product.subcategory === "object" && product.subcategory !== null ? product.subcategory.name : product.subcategory;
+  // Strictly extract string to prevent Type 'CategoryRef' is not assignable to type 'ReactNode' error
+  const categoryName: string =
+    typeof product.category === "object" && product.category !== null
+      ? product.category.name
+      : typeof product.category === "string"
+      ? product.category
+      : "";
+
+  const subcategoryName: string =
+    typeof product.subcategory === "object" && product.subcategory !== null
+      ? product.subcategory.name
+      : typeof product.subcategory === "string"
+      ? product.subcategory
+      : "";
 
   return (
     <div className="product-detail-page">
@@ -276,12 +287,12 @@ const ProductDetails = () => {
           <div className="product-detail-info">
             <div className="product-detail-eyebrow">
               <span className="product-detail-brand">{product.brand || "GENUINE BRAND"}</span>
-              {categoryName && (
+              {Boolean(categoryName) && (
                 <span className="product-detail-sku">
                   {categoryName} {subcategoryName ? `› ${subcategoryName}` : ""}
                 </span>
               )}
-              {product.sku && <span className="product-detail-sku">SKU: {product.sku}</span>}
+              {Boolean(product.sku) && <span className="product-detail-sku">SKU: {product.sku}</span>}
             </div>
 
             <h1 className="product-detail-title">{product.name}</h1>
@@ -407,64 +418,66 @@ const ProductDetails = () => {
               <div className="product-detail-spec-value">{product.sku || "-"}</div>
             </div>
 
-            {categoryName && (
+            {Boolean(categoryName) && (
               <div className="product-detail-spec-item">
                 <div className="product-detail-spec-label">Category</div>
                 <div className="product-detail-spec-value">{categoryName}</div>
               </div>
             )}
 
-            {subcategoryName && (
+            {Boolean(subcategoryName) && (
               <div className="product-detail-spec-item">
                 <div className="product-detail-spec-label">Subcategory</div>
                 <div className="product-detail-spec-value">{subcategoryName}</div>
               </div>
             )}
 
-            {product.attributes?.color && (
+            {Boolean(product.attributes?.color) && (
               <div className="product-detail-spec-item">
                 <div className="product-detail-spec-label">Color</div>
-                <div className="product-detail-spec-value">{product.attributes.color}</div>
+                <div className="product-detail-spec-value">{product.attributes!.color}</div>
               </div>
             )}
 
-            {product.attributes?.size && (
+            {Boolean(product.attributes?.size) && (
               <div className="product-detail-spec-item">
                 <div className="product-detail-spec-label">Size</div>
-                <div className="product-detail-spec-value">{product.attributes.size}</div>
+                <div className="product-detail-spec-value">{product.attributes!.size}</div>
               </div>
             )}
 
-            {product.attributes?.material && (
+            {Boolean(product.attributes?.material) && (
               <div className="product-detail-spec-item">
                 <div className="product-detail-spec-label">Material</div>
-                <div className="product-detail-spec-value">{product.attributes.material}</div>
+                <div className="product-detail-spec-value">{product.attributes!.material}</div>
               </div>
             )}
 
-            {product.attributes?.weight?.value && (
+            {Boolean(product.attributes?.weight?.value) && (
               <div className="product-detail-spec-item">
                 <div className="product-detail-spec-label">Weight</div>
                 <div className="product-detail-spec-value">
-                  {product.attributes.weight.value} {product.attributes.weight.unit || "g"}
+                  {product.attributes!.weight!.value} {product.attributes!.weight!.unit || "g"}
                 </div>
               </div>
             )}
 
-            {(product.attributes?.dimensions?.length ||
-              product.attributes?.dimensions?.width ||
-              product.attributes?.dimensions?.height) && (
+            {Boolean(
+              product.attributes?.dimensions?.length ||
+                product.attributes?.dimensions?.width ||
+                product.attributes?.dimensions?.height
+            ) && (
               <div className="product-detail-spec-item">
-                <div className="product-detail-spec-label">Dimensions</div>
+                <div className="product-detail-spec-label">Dimensions (L × W × H)</div>
                 <div className="product-detail-spec-value">
                   {[
-                    product.attributes.dimensions.length,
-                    product.attributes.dimensions.width,
-                    product.attributes.dimensions.height,
+                    product.attributes!.dimensions!.length,
+                    product.attributes!.dimensions!.width,
+                    product.attributes!.dimensions!.height,
                   ]
                     .filter(Boolean)
                     .join(" × ")}{" "}
-                  {product.attributes.dimensions.unit || "cm"}
+                  {product.attributes!.dimensions!.unit || "cm"}
                 </div>
               </div>
             )}
@@ -524,7 +537,7 @@ const ProductDetails = () => {
         )}
 
         {/* MANUFACTURER SECTION */}
-        {product.manufacturer?.name && (
+        {Boolean(product.manufacturer?.name) && (
           <section className="product-detail-section-card">
             <h2 className="product-detail-section-title">
               <Building size={18} style={{ color: "#2563eb", marginRight: 8, verticalAlign: "middle" }} />
@@ -533,24 +546,24 @@ const ProductDetails = () => {
             <div className="product-detail-specs-grid">
               <div className="product-detail-spec-item">
                 <div className="product-detail-spec-label">Manufacturer</div>
-                <div className="product-detail-spec-value">{product.manufacturer.name}</div>
+                <div className="product-detail-spec-value">{product.manufacturer!.name}</div>
               </div>
-              {product.manufacturer.country && (
+              {Boolean(product.manufacturer?.country) && (
                 <div className="product-detail-spec-item">
                   <div className="product-detail-spec-label">Country of Origin</div>
-                  <div className="product-detail-spec-value">{product.manufacturer.country}</div>
+                  <div className="product-detail-spec-value">{product.manufacturer!.country}</div>
                 </div>
               )}
-              {product.manufacturer.contact && (
+              {Boolean(product.manufacturer?.contact) && (
                 <div className="product-detail-spec-item">
                   <div className="product-detail-spec-label">Contact</div>
-                  <div className="product-detail-spec-value">{product.manufacturer.contact}</div>
+                  <div className="product-detail-spec-value">{product.manufacturer!.contact}</div>
                 </div>
               )}
-              {product.manufacturer.email && (
+              {Boolean(product.manufacturer?.email) && (
                 <div className="product-detail-spec-item">
                   <div className="product-detail-spec-label">Email</div>
-                  <div className="product-detail-spec-value">{product.manufacturer.email}</div>
+                  <div className="product-detail-spec-value">{product.manufacturer!.email}</div>
                 </div>
               )}
             </div>

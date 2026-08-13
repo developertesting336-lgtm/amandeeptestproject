@@ -28,13 +28,12 @@ export const getProducts = async (req, res) => {
 
 
 
-    // console.log(search)
+    console.log(search)
     // console.log(search.trim())
 
     if (search && search.trim()) {
       const searchValue = search.trim();
       const escapedSearch = searchValue.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-
 
       const matchingCategories = await Category.find({
         name: { $regex: escapedSearch, $options: "i" },
@@ -52,7 +51,7 @@ export const getProducts = async (req, res) => {
         },
         {
           brand: {
-
+            // $regex: escapedSearch,
             $regex: `\\b${escapedSearch}`,
             $options: "i",
           },
@@ -66,32 +65,30 @@ export const getProducts = async (req, res) => {
       }
     }
 
-    console.log(search)
-
-
-
     if (category && category !== "all") {
       const isObjectId = /^[0-9a-fA-F]{24}$/.test(category);
-      const escapedCategory = category.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+      const cleanCategoryName = category.replace(/[-_]/g, " ").trim();
+      const escapedCategory = cleanCategoryName.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 
       const categoryDoc = await Category.findOne({
         $or: [
           ...(isObjectId ? [{ _id: category }] : []),
-          { name: { $regex: `^${escapedCategory}$`, $options: "i" } },
+          { name: { $regex: escapedCategory, $options: "i" } },
           { slug: category.toLowerCase() },
+          { slug: cleanCategoryName.toLowerCase().replace(/\s+/g, "-") },
         ],
-        parent: null,
         isActive: true,
       }).select("_id");
 
-      if (!categoryDoc) {
-        return res.status(404).json({
-          success: false,
-          message: "Category not found",
-        });
+      if (categoryDoc) {
+        filter.category = categoryDoc._id;
+      } else {
+        // If category is not in DB, search by category name regex on products directly or return empty result
+        filter.$or = [
+          { categoryName: { $regex: escapedCategory, $options: "i" } },
+          { "category.name": { $regex: escapedCategory, $options: "i" } },
+        ];
       }
-
-      filter.category = categoryDoc._id;
     }
 
 
@@ -339,6 +336,8 @@ export const getProducts = async (req, res) => {
     // =================================================
     // RESPONSE
     // =================================================
+
+    // console.log(products)
 
     return res.status(200).json({
       success: true,
