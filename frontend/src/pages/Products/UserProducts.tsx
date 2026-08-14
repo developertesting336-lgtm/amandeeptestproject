@@ -132,6 +132,7 @@ const UserProducts = () => {
   const [sortBy, setSortBy] = useState(""); // Default unselected
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
 
+
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [serverTotalPages, setServerTotalPages] = useState<number | null>(null);
@@ -171,6 +172,44 @@ const UserProducts = () => {
       setCurrentPage(1);
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(
+          `${API_BASE_URL}/api/wishlist`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to fetch wishlist");
+        }
+
+        if (data.success) {
+          const wishlistState: Record<string, boolean> = {};
+
+          data.products.forEach((product: Product) => {
+            wishlistState[product._id] = true;
+          });
+
+          setWishlist(wishlistState);
+        }
+      } catch (error) {
+        console.error("Failed to fetch wishlist:", error);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
 
   // Fetch Products with Backend API Params
   useEffect(() => {
@@ -315,9 +354,41 @@ const UserProducts = () => {
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   };
 
-  const toggleWishlist = (e: React.MouseEvent, id: string) => {
+  const toggleWishlist = async (
+    e: React.MouseEvent,
+    id: string
+  ) => {
     e.stopPropagation();
-    setWishlist((prev) => ({ ...prev, [id]: !prev[id] }));
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/wishlist/${id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update wishlist");
+      }
+
+      if (data.success) {
+        setWishlist((prev) => ({
+          ...prev,
+          [id]: data.action === "added",
+        }));
+      }
+    } catch (error) {
+      console.error("Wishlist error:", error);
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent, productId: string) => {

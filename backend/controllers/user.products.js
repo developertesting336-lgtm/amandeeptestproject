@@ -1,6 +1,7 @@
 
 import Product from "../models/Product.js";
 import Category from "../models/Category.js";
+import Wishlist from "../models/Wishlist.js";
 
 
 
@@ -372,4 +373,107 @@ export const getProducts = async (req, res) => {
     });
   }
 };
+
+
+export const wishListManage = async (req, res) => {
+  try {
+    // console.log("POST wishlist hitted")
+
+    const userId = req.user.id;
+    const { productId } = req.params;
+
+    let wishlist = await Wishlist.findOne({
+      user: userId,
+    });
+
+    if (!wishlist) {
+      wishlist = await Wishlist.create({
+        user: userId,
+        products: [productId],
+      });
+
+      return res.status(200).json({
+        success: true,
+        action: "added",
+        message: "Product added to wishlist",
+        wishlist,
+      });
+    }
+
+    const productIndex = wishlist.products.findIndex(
+      (id) => id.toString() === productId
+    );
+
+    if (productIndex !== -1) {
+      wishlist.products.splice(productIndex, 1);
+
+      await wishlist.save();
+
+      return res.status(200).json({
+        success: true,
+        action: "removed",
+        message: "Product removed from wishlist",
+        wishlist,
+      });
+    }
+
+    wishlist.products.push(productId);
+
+    await wishlist.save();
+
+    return res.status(200).json({
+      success: true,
+      action: "added",
+      message: "Product added to wishlist",
+      wishlist,
+    });
+
+  } catch (error) {
+    console.error("Wishlist error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong",
+    });
+  }
+};
+
+
+
+export const getWishlist = async (req, res) => {
+  try {
+
+    // console.log("get wishlist hitted")
+    const userId = req.user._id;
+    // console.log(req.user)
+
+    const wishlist = await Wishlist.findOne({
+      user: userId,
+    }).populate("products");
+
+    // User doesn't have a wishlist yet
+    if (!wishlist) {
+      return res.status(200).json({
+        success: true,
+        products: [],
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      products: wishlist.products,
+    });
+
+  } catch (error) {
+    console.error("Get wishlist error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get wishlist",
+    });
+  }
+};
+
+
+
 

@@ -71,18 +71,22 @@ const Navbar = () => {
 
         {/* Navigation Menu */}
         <nav className={`navbar-menu ${menuOpen ? "open" : ""}`}>
-          {/* Common Links */}
-          <Link to="/" className="navbar-link" onClick={closeMenu}>
-            Home
-          </Link>
+          {/* Common Links (Visible only for non-admin users and guests) */}
+          {user?.role !== "admin" && (
+            <>
+              <Link to="/" className="navbar-link" onClick={closeMenu}>
+                Home
+              </Link>
 
-          <Link to="/products" className="navbar-link" onClick={closeMenu}>
-            Products
-          </Link>
+              <Link to="/products" className="navbar-link" onClick={closeMenu}>
+                Products
+              </Link>
 
-          <Link to="/about" className="navbar-link" onClick={closeMenu}>
-            About
-          </Link>
+              <Link to="/about" className="navbar-link" onClick={closeMenu}>
+                About
+              </Link>
+            </>
+          )}
 
           {/* Guest */}
           {!isAuthenticated && (

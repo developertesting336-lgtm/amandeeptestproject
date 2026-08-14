@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Sparkles,
   Check,
+  Heart,
 } from "lucide-react";
 import { useCart } from "../../context/cartContext";
 import Footer from "../Home/footersection";
@@ -97,6 +98,36 @@ const ProductDetails = () => {
   const [selectedImgIndex, setSelectedImgIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<"specifications" | "description" | "warranty">("specifications");
   const [addedNotice, setAddedNotice] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+        const response = await fetch(`${API_BASE_URL}/api/wishlist`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success && Array.isArray(data.products)) {
+          const exists = data.products.some(
+            (p: any) => (p._id || p.id) === productId
+          );
+          setIsWishlisted(exists);
+        }
+      } catch (error) {
+        console.error("Failed to fetch wishlist:", error);
+      }
+    };
+
+    fetchWishlist();
+  }, [productId]);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -206,6 +237,38 @@ const ProductDetails = () => {
     if (product?._id) {
       await addToCart(product._id, quantity);
       navigate("/cart");
+    }
+  };
+
+  const toggleWishlist = async () => {
+    if (!product?._id) return;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/wishlist/${product._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update wishlist");
+      }
+
+      if (data.success) {
+        setIsWishlisted(data.action === "added");
+      }
+    } catch (error) {
+      console.error("Wishlist toggle error:", error);
     }
   };
 
@@ -388,6 +451,18 @@ const ProductDetails = () => {
               {hasDiscount && (
                 <div className="pdp-discount-badge">{discountPercent}% OFF</div>
               )}
+              <button
+                type="button"
+                className={`pdp-wishlist-btn ${isWishlisted ? "active" : ""}`}
+                onClick={toggleWishlist}
+                aria-label="Toggle Wishlist"
+              >
+                <Heart
+                  size={18}
+                  fill={isWishlisted ? "#dc2626" : "none"}
+                  color={isWishlisted ? "#dc2626" : "#64748b"}
+                />
+              </button>
               <img
                 src={mainImage}
                 alt={product.name}

@@ -117,6 +117,37 @@ const ProductSection = () => {
     fetchFeaturedProducts();
   }, []);
 
+  // Fetch Wishlist from Backend
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await fetch(`${API_BASE_URL}/api/wishlist`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success && Array.isArray(data.products)) {
+          const wishlistState: Record<string, boolean> = {};
+          data.products.forEach((product: any) => {
+            const id = product._id || product.id;
+            if (id) wishlistState[id] = true;
+          });
+          setWishlist(wishlistState);
+        }
+      } catch (error) {
+        console.error("Failed to fetch wishlist:", error);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
+
   const displayList = activeCategory === "All"
     ? allProducts
     : allProducts.filter(
@@ -158,9 +189,39 @@ const ProductSection = () => {
     return () => clearInterval(interval);
   }, [isPaused, loading, displayList.length, maxScrollPx]);
 
-  const toggleWishlist = (e: React.MouseEvent, id: string) => {
+  const toggleWishlist = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setWishlist((prev) => ({ ...prev, [id]: !prev[id] }));
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/wishlist/${id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update wishlist");
+      }
+
+      if (data.success) {
+        setWishlist((prev) => ({
+          ...prev,
+          [id]: data.action === "added",
+        }));
+      }
+    } catch (error) {
+      console.error("Wishlist error:", error);
+    }
   };
 
   const goToProduct = (id: string) => {

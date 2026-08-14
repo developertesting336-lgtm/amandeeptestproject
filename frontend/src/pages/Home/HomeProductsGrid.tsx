@@ -67,11 +67,70 @@ const HomeProductsGrid = () => {
     fetchProducts();
   }, []);
 
-  // console.log(products)
+  // Fetch Wishlist from Backend
+  useEffect(() => {
+    const fetchWishlist = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
 
-  const toggleWishlist = (e: React.MouseEvent, productId: string) => {
+        const response = await fetch(`${API_BASE_URL}/api/wishlist`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success && Array.isArray(data.products)) {
+          const wishlistState: Record<string, boolean> = {};
+          data.products.forEach((product: any) => {
+            const id = product._id || product.id;
+            if (id) wishlistState[id] = true;
+          });
+          setWishlist(wishlistState);
+        }
+      } catch (error) {
+        console.error("Failed to fetch wishlist in HomeProductsGrid:", error);
+      }
+    };
+
+    fetchWishlist();
+  }, []);
+
+  const toggleWishlist = async (e: React.MouseEvent, productId: string) => {
     e.stopPropagation();
-    setWishlist((prev) => ({ ...prev, [productId]: !prev[productId] }));
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/wishlist/${productId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to update wishlist");
+      }
+
+      if (data.success) {
+        setWishlist((prev) => ({
+          ...prev,
+          [productId]: data.action === "added",
+        }));
+      }
+    } catch (error) {
+      console.error("Wishlist error:", error);
+    }
   };
 
   const handleAddToCart = (e: React.MouseEvent, productId: string) => {
