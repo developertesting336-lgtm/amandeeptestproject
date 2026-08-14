@@ -278,7 +278,7 @@
 .user-product-card:hover {
   transform: translateY(-6px);
   border-color: transparent !important;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 8px 24px rgba(25, 49, 155, 0.418) !important;
 }
 
 .user-product-image-wrapper {
@@ -301,7 +301,7 @@
 .user-product-card:hover .user-product-image-wrapper {
   background-color: #ffffff;
   border: none !important;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 18px rgba(212, 18, 18, 0.06);
 }
 
 .user-product-image {
@@ -434,7 +434,7 @@
 }
 
 .user-product-cart-btn:hover {
-  background-color: #0f172a;
+  background-color: #1a1a1b;
   color: #ffffff;
   border-color: #0f172a;
   transform: translateY(-1px);
@@ -480,9 +480,6 @@
   background-color: #5e43af;
 }
 
-/* =====================================================
-   PAGINATION SECTION
-===================================================== */
 
 .user-products-pagination {
   display: flex;

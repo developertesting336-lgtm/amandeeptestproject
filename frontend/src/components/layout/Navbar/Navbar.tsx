@@ -44,19 +44,21 @@ const Navbar = () => {
           <span className="brand-name">Shopora</span>
         </Link>
 
-        {/* ALWAYS VISIBLE SEARCH BAR ON NAVBAR */}
-        <form className="search-form" onSubmit={(e) => e.preventDefault()}>
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <button type="submit" className="search-btn" aria-label="Search">
-            <Search size={16} strokeWidth={2} />
-          </button>
-        </form>
+        {/* SEARCH BAR (Hidden for Admin) */}
+        {user?.role !== "admin" && (
+          <form className="search-form" onSubmit={(e) => e.preventDefault()}>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button type="submit" className="search-btn" aria-label="Search">
+              <Search size={16} strokeWidth={2} />
+            </button>
+          </form>
+        )}
 
         {/* Mobile Hamburger Toggle */}
         <button

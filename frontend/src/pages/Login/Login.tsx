@@ -46,23 +46,24 @@ const Login = () => {
         body: JSON.stringify(formData),
       });
 
-    //   console.log(JSON.stringify(formData))
+      //   console.log(JSON.stringify(formData))
 
 
 
       const data = await response.json();
 
-if (!response.ok) {
-  throw new Error(data.message || "Login failed");
-}
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
 
-login(data.token, data.user);
+      login(data.token, data.user);
 
-if (data.user.role === "admin") {
-  navigate("/admin/dashboard");
-} else {
-  navigate("/profile");
-}
+      if (data.user.role === "admin") {
+        navigate("/admin/dashboard");
+      }
+      else {
+        navigate("/");
+      }
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
