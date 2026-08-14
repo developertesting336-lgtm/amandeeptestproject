@@ -67,6 +67,8 @@ const HomeProductsGrid = () => {
     fetchProducts();
   }, []);
 
+  // console.log(products)
+
   const toggleWishlist = (e: React.MouseEvent, productId: string) => {
     e.stopPropagation();
     setWishlist((prev) => ({ ...prev, [productId]: !prev[productId] }));
@@ -133,7 +135,8 @@ const HomeProductsGrid = () => {
               ? Math.round(((prod.price - prod.salePrice!) / prod.price) * 100)
               : 0;
 
-            const categoryName = typeof prod.category === "object" ? prod.category?.name || "General" : prod.category || "General";
+            const categoryName = typeof prod.category === "object" ? prod.category?.name : prod.category;
+            const brand = prod.brand || categoryName || "Featured";
             const imgUrl = formatImageUrl(prod.images?.[0], product1);
             const isLiked = !!wishlist[prod._id];
 
@@ -164,7 +167,7 @@ const HomeProductsGrid = () => {
 
                 <div className="home-product-info">
                   <div className="home-product-meta">
-                    <span className="home-product-cat">{categoryName}</span>
+                    <span className="home-product-cat">{brand}</span>
                     {hasDiscount && (
                       <span className="home-product-discount-tag">-{discountPercent}%</span>
                     )}

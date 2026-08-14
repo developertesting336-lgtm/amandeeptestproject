@@ -11,7 +11,7 @@ export const getCategories = async (req, res) => {
       .populate("parent", "name")
       .sort({ createdAt: -1 });
 
-    console.log(categories)
+    // console.log(categories)
 
     return res.status(200).json({
       success: true,

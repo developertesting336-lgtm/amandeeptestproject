@@ -75,6 +75,50 @@ const formatImageUrl = (image: string | ProductImageItem | undefined): string =>
   return `${API_BASE_URL}${formattedPath}`;
 };
 
+const fetchImageAsFile = async (url: string, filename: string): Promise<File | null> => {
+  if (!url) return null;
+
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    if (res.ok) {
+      const blob = await res.blob();
+      const type = blob.type || "image/jpeg";
+      return new File([blob], filename, { type });
+    }
+  } catch (err) {
+    console.warn("Direct image fetch failed, trying Image Canvas fallback:", err);
+  }
+
+  return new Promise<File | null>((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth || img.width || 400;
+        canvas.height = img.naturalHeight || img.height || 400;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(null);
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return resolve(null);
+            const type = blob.type || "image/jpeg";
+            resolve(new File([blob], filename, { type }));
+          },
+          "image/jpeg",
+          0.95
+        );
+      } catch (e) {
+        console.warn("Canvas toBlob failed:", e);
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+};
+
 const EditProduct = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
@@ -148,7 +192,6 @@ const EditProduct = () => {
   const [existingImages, setExistingImages] = useState<ProductImageItem[]>([]);
   const [newImages, setNewImages] = useState<File[]>([]);
   const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
-  const [imageUrlText, setImageUrlText] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -429,26 +472,20 @@ const EditProduct = () => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    const combined = [...newImages, ...files].slice(0, 10);
-    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    const currentTotal = existingImages.length + newImages.length;
+    const remainingSlots = Math.max(0, 5 - currentTotal);
+    if (remainingSlots <= 0) {
+      setError("Maximum 5 images allowed in total.");
+      e.target.value = "";
+      return;
+    }
 
-    setNewImages(combined);
-    setNewImagePreviews((prev) => [...prev, ...newPreviews].slice(0, 10));
+    const filesToUpload = files.slice(0, remainingSlots);
+    const newPreviews = filesToUpload.map((file) => URL.createObjectURL(file));
+
+    setNewImages((prev) => [...prev, ...filesToUpload]);
+    setNewImagePreviews((prev) => [...prev, ...newPreviews]);
     e.target.value = "";
-  };
-
-  const handleAddImageUrl = () => {
-    if (!imageUrlText.trim()) return;
-    setExistingImages((prev) => [
-      ...prev,
-      {
-        public_id: `img_url_${Date.now()}`,
-        url: imageUrlText.trim(),
-        alt: name,
-        isPrimary: prev.length === 0,
-      },
-    ]);
-    setImageUrlText("");
   };
 
   const removeExistingImage = (index: number) => {
@@ -534,95 +571,6 @@ const EditProduct = () => {
 
       const token = localStorage.getItem("token");
 
-      // Format images payload
-      const formattedImages: Array<{
-        public_id: string;
-        url: string;
-        alt: string;
-        isPrimary: boolean;
-      }> = existingImages.map((img, i) => ({
-        public_id: img.public_id || `img_${i}`,
-        url: typeof img === "string" ? img : img.url,
-        alt: img.alt || name,
-        isPrimary: i === 0,
-      }));
-
-      // Convert newly selected file images
-      for (let i = 0; i < newImages.length; i++) {
-        const file = newImages[i];
-        const dataUrl = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(file);
-        });
-
-        formattedImages.push({
-          public_id: `img_file_${Date.now()}_${i}`,
-          url: dataUrl,
-          alt: name,
-          isPrimary: formattedImages.length === 0,
-        });
-      }
-
-      const updatePayload = {
-        name: name.trim(),
-        short_description: shortDescription.trim(),
-        full_description: fullDescription.trim(),
-        highlights: highlights.filter((h) => h.trim().length > 0),
-        category,
-        subcategory,
-        brand: brand.trim(),
-        price: Number(price),
-        salePrice: salePrice ? Number(salePrice) : null,
-        sku: sku.trim().toUpperCase(),
-        stock: Number(stock || 0),
-        manufacturer: {
-          name: manufacturer.name.trim(),
-          address: manufacturer.address.trim(),
-          country: manufacturer.country.trim(),
-          contact: manufacturer.contact.trim(),
-          email: manufacturer.email.trim(),
-          website: manufacturer.website.trim(),
-        },
-        warranty: {
-          available: warranty.available,
-          duration: warranty.duration ? Number(warranty.duration) : null,
-          unit: warranty.unit,
-          type: warranty.type,
-          description: warranty.description.trim(),
-          terms: warranty.terms.trim(),
-        },
-        returnPolicy: {
-          eligible: returnPolicy.eligible,
-          returnWindow: returnPolicy.returnWindow
-            ? Number(returnPolicy.returnWindow)
-            : null,
-          returnWindowUnit: returnPolicy.returnWindowUnit,
-          replacementAvailable: returnPolicy.replacementAvailable,
-          refundAvailable: returnPolicy.refundAvailable,
-          conditions: returnPolicy.conditions.trim(),
-          description: returnPolicy.description.trim(),
-        },
-        attributes: {
-          color: attributes.color.trim(),
-          size: attributes.size.trim(),
-          material: attributes.material.trim(),
-          weight: {
-            value: attributes.weightValue ? Number(attributes.weightValue) : null,
-            unit: attributes.weightUnit,
-          },
-          dimensions: {
-            length: attributes.length ? Number(attributes.length) : null,
-            width: attributes.width ? Number(attributes.width) : null,
-            height: attributes.height ? Number(attributes.height) : null,
-            unit: attributes.dimUnit,
-          },
-        },
-        images: formattedImages,
-        isFeatured,
-        isActive,
-      };
-
       // Construct FormData for multipart/form-data request (req.files)
       const formData = new FormData();
       formData.append("name", name.trim());
@@ -641,17 +589,66 @@ const EditProduct = () => {
       formData.append("isActive", String(isActive));
 
       formData.append("highlights", JSON.stringify(highlights.filter((h) => h.trim().length > 0)));
-      formData.append("manufacturer", JSON.stringify(updatePayload.manufacturer));
-      formData.append("warranty", JSON.stringify(updatePayload.warranty));
-      formData.append("returnPolicy", JSON.stringify(updatePayload.returnPolicy));
-      formData.append("attributes", JSON.stringify(updatePayload.attributes));
+      formData.append("manufacturer", JSON.stringify({
+        name: manufacturer.name.trim(),
+        address: manufacturer.address.trim(),
+        country: manufacturer.country.trim(),
+        contact: manufacturer.contact.trim(),
+        email: manufacturer.email.trim(),
+        website: manufacturer.website.trim(),
+      }));
+      formData.append("warranty", JSON.stringify({
+        available: warranty.available,
+        duration: warranty.duration ? Number(warranty.duration) : null,
+        unit: warranty.unit,
+        type: warranty.type,
+        description: warranty.description.trim(),
+        terms: warranty.terms.trim(),
+      }));
+      formData.append("returnPolicy", JSON.stringify({
+        eligible: returnPolicy.eligible,
+        returnWindow: returnPolicy.returnWindow ? Number(returnPolicy.returnWindow) : null,
+        returnWindowUnit: returnPolicy.returnWindowUnit,
+        replacementAvailable: returnPolicy.replacementAvailable,
+        refundAvailable: returnPolicy.refundAvailable,
+        conditions: returnPolicy.conditions.trim(),
+        description: returnPolicy.description.trim(),
+      }));
+      formData.append("attributes", JSON.stringify({
+        color: attributes.color.trim(),
+        size: attributes.size.trim(),
+        material: attributes.material.trim(),
+        weight: {
+          value: attributes.weightValue ? Number(attributes.weightValue) : null,
+          unit: attributes.weightUnit,
+        },
+        dimensions: {
+          length: attributes.length ? Number(attributes.length) : null,
+          width: attributes.width ? Number(attributes.width) : null,
+          height: attributes.height ? Number(attributes.height) : null,
+          unit: attributes.dimUnit,
+        },
+      }));
       formData.append("existingImages", JSON.stringify(existingImages));
 
+      // Convert existing unremoved images to binary File objects so req.files on backend receives ALL files (old + new)
+      for (let i = 0; i < existingImages.length; i++) {
+        const img = existingImages[i];
+        const imgUrl = formatImageUrl(img);
+        if (imgUrl) {
+          const file = await fetchImageAsFile(imgUrl, `existing_image_${i + 1}.jpg`);
+          if (file) {
+            formData.append("images", file);
+          }
+        }
+      }
+
+      // Append newly selected binary files for multer middleware under 'images' field (populates req.files)
       newImages.forEach((file) => {
         formData.append("images", file);
       });
 
-      let response = await fetch(
+      const response = await fetch(
         `${API_BASE_URL}/api/admin/product/${productId}`,
         {
           method: "PUT",
@@ -662,25 +659,9 @@ const EditProduct = () => {
         }
       );
 
-      // Fallback try to JSON payload if server expects JSON body
-      let finalRes = response;
-      if (!response.ok) {
-        finalRes = await fetch(
-          `${API_BASE_URL}/api/admin/product/${productId}`,
-          {
-            method: "PUT",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(updatePayload),
-          }
-        );
-      }
+      const result = await response.json();
 
-      const result = await finalRes.json();
-
-      if (!finalRes.ok || !result.success) {
+      if (!response.ok || !result.success) {
         throw new Error(result.message || "Failed to update product");
       }
 
@@ -1081,33 +1062,7 @@ const EditProduct = () => {
 
           {/* Product Images */}
           <div className="edit-card">
-            <h3 className="edit-card-title">Product Images</h3>
-
-            <div className="edit-group">
-              <label>Add Image URL</label>
-              <div style={{ display: "flex", gap: 6 }}>
-                <input
-                  type="text"
-                  placeholder="https://..."
-                  value={imageUrlText}
-                  onChange={(e) => setImageUrlText(e.target.value)}
-                />
-                <button
-                  type="button"
-                  onClick={handleAddImageUrl}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 6,
-                    background: "#0f172a",
-                    color: "#fff",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
-                >
-                  Add
-                </button>
-              </div>
-            </div>
+            <h3 className="edit-card-title">Product Images (Max 5)</h3>
 
             <label className="edit-image-dropzone">
               <UploadCloud size={24} />

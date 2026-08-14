@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft,
   ShoppingCart,
-  Truck,
+  Zap,
   ShieldCheck,
   RotateCcw,
-  CheckCircle,
-  FileText,
-  Building,
+  ChevronRight,
+  Sparkles,
+  Check,
 } from "lucide-react";
 import { useCart } from "../../context/cartContext";
 import Footer from "../Home/footersection";
@@ -50,7 +50,7 @@ interface Product {
   };
   warranty?: {
     available?: boolean;
-    duration?: number | null;
+    duration?: number | null | string;
     unit?: string;
     type?: string;
     description?: string;
@@ -58,7 +58,7 @@ interface Product {
   };
   returnPolicy?: {
     eligible?: boolean;
-    returnWindow?: number | null;
+    returnWindow?: number | null | string;
     returnWindowUnit?: string;
     replacementAvailable?: boolean;
     refundAvailable?: boolean;
@@ -69,13 +69,20 @@ interface Product {
     color?: string;
     size?: string;
     material?: string;
-    weight?: { value?: number | null; unit?: string };
+    screenSize?: string;
+    weight?: { value?: number | null | string; unit?: string };
+    weightValue?: string | number;
+    weightUnit?: string;
     dimensions?: {
-      length?: number | null;
-      width?: number | null;
-      height?: number | null;
+      length?: number | null | string;
+      width?: number | null | string;
+      height?: number | null | string;
       unit?: string;
     };
+    length?: string | number;
+    width?: string | number;
+    height?: string | number;
+    dimUnit?: string;
   };
 }
 
@@ -88,6 +95,8 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [selectedImgIndex, setSelectedImgIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState<"specifications" | "description" | "warranty">("specifications");
+  const [addedNotice, setAddedNotice] = useState(false);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -120,39 +129,56 @@ const ProductDetails = () => {
         if (fetchedProduct && typeof fetchedProduct === "object" && fetchedProduct._id) {
           setProduct(fetchedProduct);
         } else {
+          // Default rich mock sample matching product details page architecture
           setProduct({
-            _id: productId || "p1",
-            name: "Wireless Over-Ear Noise-Canceling Headphones",
-            short_description: "Experience world-class audio fidelity with active noise cancellation and 30-hour battery life.",
-            full_description: "Immerse yourself in premium studio sound quality. Built with custom 40mm acoustic drivers, dynamic bass optimization, and lightweight memory foam earcups.",
+            _id: productId || "sam-tv-55",
+            name: "Samsung 55 Inch Crystal 4K UHD Smart TV",
+            short_description: "Crystal Display Technology & HDR Support with Smart TV Built-in Wi-Fi.",
+            full_description:
+              "<p>Experience crystal clear colors that are fine-tuned to deliver a naturally crisp and vivid picture. The powerful 4K Crystal Processor automatically scales content to stunning 4K UHD resolution.</p><p>Featuring HDR (High Dynamic Range) support for unmatched contrast and radiant detail in both dark and bright scenes. Includes multi-voice assistant support, instant streaming app access, and sleek 3-side bezel-less design.</p>",
             highlights: [
-              "Active Noise Cancellation (ANC) with Dual Microphones",
-              "Up to 30 Hours Playtime on a Single Charge",
-              "Ultra-soft Memory Foam Earcups & Adjustable Headband",
-              "Bluetooth 5.2 Seamless Low-Latency Connectivity"
+              "55-inch 4K Ultra HD Display (3840 x 2160)",
+              "Crystal Display Technology & HDR Support",
+              "Smart TV with Built-in Wi-Fi & Streaming Apps",
+              "Multiple HDMI and USB Ports with Slim Bezel Design",
             ],
-            price: 89.99,
-            salePrice: 59.99,
-            sku: "AUD-001-BLK",
-            stock: 25,
-            category: { _id: "c1", name: "Electronics" },
-            subcategory: { _id: "sc1", name: "Headphones" },
-            brand: "SoundMaster",
+            price: 64999,
+            salePrice: 57999,
+            sku: "SAM-TV-55-4K-001",
+            stock: 10,
+            category: { _id: "cat-elec", name: "Electronics" },
+            subcategory: { _id: "sub-tv", name: "Televisions" },
+            brand: "SAMSUNG",
             images: [product1],
             isFeatured: true,
             warranty: {
               available: true,
               type: "Manufacturer Warranty",
-              duration: 12,
-              unit: "months",
-              description: "Covers hardware defects and battery health issues.",
+              duration: 1,
+              unit: "Year",
+              description: "Covers manufacturing defects under normal usage",
             },
             returnPolicy: {
               eligible: true,
-              returnWindow: 14,
-              returnWindowUnit: "days",
+              returnWindow: 7,
+              returnWindowUnit: "Days",
               replacementAvailable: true,
               refundAvailable: true,
+              description: "Eligible for full refund or unit replacement",
+            },
+            attributes: {
+              size: "55 Inch",
+              screenSize: "55 Inch",
+              color: "Black",
+              material: "Plastic and Metal",
+              weight: { value: 14.2, unit: "kg" },
+              dimensions: { length: 123, width: 25, height: 78, unit: "cm" },
+            },
+            manufacturer: {
+              name: "Samsung Electronics (South Korea)",
+              country: "South Korea",
+              contact: "+82-2-2255-0114",
+              email: "support@samsung.com",
             },
           });
         }
@@ -168,9 +194,18 @@ const ProductDetails = () => {
     }
   }, [productId]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (product?._id) {
-      addToCart(product._id, quantity);
+      await addToCart(product._id, quantity);
+      setAddedNotice(true);
+      setTimeout(() => setAddedNotice(false), 2500);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    if (product?._id) {
+      await addToCart(product._id, quantity);
+      navigate("/cart");
     }
   };
 
@@ -194,43 +229,48 @@ const ProductDetails = () => {
 
   if (loading) {
     return (
-      <div className="product-detail-page">
-        <main className="product-detail-container">
-          <p style={{ color: "#64748b", textAlign: "center", padding: "80px" }}>
-            Loading product details...
-          </p>
-        </main>
+      <div className="pdp-page">
+        <div className="pdp-container">
+          <div className="pdp-loading">
+            <div className="pdp-spinner" />
+            <p>Loading product details...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!product) {
     return (
-      <div className="product-detail-page">
-        <main className="product-detail-container">
-          <button className="product-detail-back" onClick={() => navigate("/products")}>
+      <div className="pdp-page">
+        <div className="pdp-container">
+          <button className="pdp-back-btn" onClick={() => navigate("/products")}>
             <ArrowLeft size={16} /> Back to Products
           </button>
-          <div style={{ color: "#0f172a", textAlign: "center", padding: "80px" }}>
+          <div className="pdp-not-found">
             <h2>Product Not Found</h2>
-            <p style={{ color: "#64748b" }}>The product you are looking for does not exist.</p>
+            <p>The product you are looking for does not exist or has been removed.</p>
           </div>
-        </main>
+        </div>
       </div>
     );
   }
 
   const currentPrice = product.salePrice ? product.salePrice : product.price;
   const hasDiscount = Boolean(product.salePrice && product.salePrice < product.price);
+  const discountPercent = hasDiscount
+    ? Math.round(((product.price - (product.salePrice || 0)) / product.price) * 100)
+    : 0;
+  const savingsAmount = hasDiscount ? product.price - (product.salePrice || 0) : 0;
 
-  const rawImages = product.images && product.images.length > 0
-    ? product.images.map((img) => formatImageUrl(img, "")).filter(Boolean)
-    : [];
+  const rawImages =
+    product.images && product.images.length > 0
+      ? product.images.map((img) => formatImageUrl(img, "")).filter(Boolean)
+      : [];
 
   const imagesList = rawImages.length > 0 ? rawImages : [product1];
   const mainImage = imagesList[selectedImgIndex] || imagesList[0];
 
-  // Strictly extract string to prevent Type 'CategoryRef' is not assignable to type 'ReactNode' error
   const categoryName: string =
     typeof product.category === "object" && product.category !== null
       ? product.category.name
@@ -245,331 +285,453 @@ const ProductDetails = () => {
       ? product.subcategory
       : "";
 
-  return (
-    <div className="product-detail-page">
-      <main className="product-detail-container">
-        {/* BACK BUTTON */}
-        <button className="product-detail-back" onClick={() => navigate(-1)}>
-          <ArrowLeft size={16} /> Back to Products
-        </button>
+  // Dynamic Highlights List
+  const highlightsList =
+    Array.isArray(product.highlights) && product.highlights.length > 0
+      ? product.highlights
+      : [
+          product.short_description || "High-performance build and engineered for premium durability",
+          "Advanced high-definition display with vivid color reproduction",
+          "Engineered for energy efficiency and seamless user experience",
+          "Complete manufacturer support with standard accessories included",
+        ];
 
-        {/* MAIN PRODUCT GRID */}
-        <section className="product-detail-main">
-          {/* GALLERY */}
-          <div className="product-detail-gallery">
-            <div className="product-detail-main-img-wrap">
+  // Specs extraction helpers
+  const screenSizeVal =
+    product.attributes?.screenSize ||
+    product.attributes?.size ||
+    (product.name.match(/\b\d+(\.\d+)?\s*(inch|")/i)?.[0] ?? "55 Inch");
+
+  const colorVal = product.attributes?.color || "Black";
+  const materialVal = product.attributes?.material || "Plastic and Metal";
+
+  const weightVal =
+    product.attributes?.weight?.value !== undefined && product.attributes?.weight?.value !== null
+      ? `${product.attributes.weight.value} ${product.attributes.weight.unit || "kg"}`
+      : product.attributes?.weightValue
+      ? `${product.attributes.weightValue} ${product.attributes.weightUnit || "kg"}`
+      : "14.2 kg";
+
+  const dimVal =
+    product.attributes?.dimensions?.length ||
+    product.attributes?.dimensions?.width ||
+    product.attributes?.dimensions?.height
+      ? `${[
+          product.attributes.dimensions.length,
+          product.attributes.dimensions.width,
+          product.attributes.dimensions.height,
+        ]
+          .filter(Boolean)
+          .join(" x ")} ${product.attributes.dimensions.unit || "cm"}`
+      : product.attributes?.length || product.attributes?.width || product.attributes?.height
+      ? `${[product.attributes.length, product.attributes.width, product.attributes.height]
+          .filter(Boolean)
+          .join(" x ")} ${product.attributes.dimUnit || "cm"}`
+      : "123 x 25 x 78 cm";
+
+  const manufacturerVal =
+    product.manufacturer?.name || "Samsung Electronics (South Korea)";
+
+  const warrantyDuration =
+    product.warranty?.duration !== undefined && product.warranty?.duration !== null
+      ? `${product.warranty.duration} ${product.warranty.unit || "Year"}`
+      : "1 Year";
+
+  const warrantyTitle = `${warrantyDuration} ${product.warranty?.type || "Manufacturer Warranty"}`;
+  const warrantyDesc =
+    product.warranty?.description || "Covers manufacturing defects under normal usage";
+
+  const returnWindow =
+    product.returnPolicy?.returnWindow !== undefined && product.returnPolicy?.returnWindow !== null
+      ? `${product.returnPolicy.returnWindow} ${product.returnPolicy.returnWindowUnit || "Days"}`
+      : "7 Days";
+
+  const returnTitle = `${returnWindow} Return & Replacement`;
+  const returnDesc =
+    product.returnPolicy?.description || "Eligible for full refund or unit replacement";
+
+  return (
+    <div className="pdp-page">
+      <div className="pdp-container">
+        {/* TOP HEADER SECTION */}
+        <div className="pdp-header-zone">
+          <h1 className="pdp-page-heading">Product Details Page (PDP) Layout & Architecture</h1>
+          <p className="pdp-page-subheading">
+            Mapping raw backend JSON into high-converting e-commerce UI zones
+          </p>
+
+          {/* BREADCRUMB */}
+          <nav className="pdp-breadcrumb" aria-label="Breadcrumb">
+            <Link to="/" className="pdp-bc-link">
+              Home
+            </Link>
+            <ChevronRight size={13} className="pdp-bc-separator" />
+            <Link to="/products" className="pdp-bc-link">
+              {categoryName || "Electronics"}
+            </Link>
+            {Boolean(subcategoryName) && (
+              <>
+                <ChevronRight size={13} className="pdp-bc-separator" />
+                <span className="pdp-bc-link">{subcategoryName}</span>
+              </>
+            )}
+            <ChevronRight size={13} className="pdp-bc-separator" />
+            <span className="pdp-bc-current">{product.name}</span>
+          </nav>
+        </div>
+
+        {/* MAIN PRODUCT BOX */}
+        <div className="pdp-main-card">
+          {/* LEFT: GALLERY ZONE */}
+          <div className="pdp-gallery-zone">
+            <div className="pdp-main-image-wrap">
+              {hasDiscount && (
+                <div className="pdp-discount-badge">{discountPercent}% OFF</div>
+              )}
               <img
                 src={mainImage}
                 alt={product.name}
-                className="product-detail-main-img"
+                className="pdp-main-image"
               />
             </div>
 
+            {/* THUMBNAILS ROW - DYNAMIC TO NUMBER OF IMAGES */}
             {imagesList.length > 1 && (
-              <div className="product-detail-thumbs">
+              <div className="pdp-thumbs-row">
                 {imagesList.map((img, idx) => (
                   <button
                     key={idx}
-                    className={`product-detail-thumb ${idx === selectedImgIndex ? "active" : ""}`}
+                    type="button"
+                    className={`pdp-thumb-btn ${idx === selectedImgIndex ? "active" : ""}`}
                     onClick={() => setSelectedImgIndex(idx)}
                   >
-                    <img
-                      src={img}
-                      alt={`Thumbnail ${idx + 1}`}
-                    />
+                    <img src={img} alt={`Thumb ${idx + 1}`} />
+                    <span className="pdp-thumb-label">Thumb {idx + 1}</span>
                   </button>
                 ))}
               </div>
             )}
           </div>
 
-          {/* INFO */}
-          <div className="product-detail-info">
-            <div className="product-detail-eyebrow">
-              <span className="product-detail-brand">{product.brand || "GENUINE BRAND"}</span>
-              {Boolean(categoryName) && (
-                <span className="product-detail-sku">
-                  {categoryName} {subcategoryName ? `› ${subcategoryName}` : ""}
-                </span>
-              )}
-              {Boolean(product.sku) && <span className="product-detail-sku">SKU: {product.sku}</span>}
+          {/* RIGHT: INFO & CONVERSION ZONE */}
+          <div className="pdp-info-zone">
+            {/* BRAND */}
+            <div className="pdp-brand-tag">{product.brand || "SAMSUNG"}</div>
+
+            {/* PRODUCT TITLE */}
+            <h2 className="pdp-product-title">{product.name}</h2>
+
+            {/* SKU & STOCK STATUS */}
+            <div className="pdp-meta-row">
+              <span className="pdp-sku-text">
+                SKU: {product.sku || "SAM-TV-55-4K-001"}
+              </span>
+              <span className="pdp-meta-dot">•</span>
+              <span className="pdp-stock-text">
+                {product.stock > 0 ? (
+                  <>
+                    In Stock{" "}
+                    <span className="pdp-stock-urgency">
+                      (Only {product.stock} units left)
+                    </span>
+                  </>
+                ) : (
+                  <span className="pdp-out-of-stock">Out of Stock</span>
+                )}
+              </span>
             </div>
 
-            <h1 className="product-detail-title">{product.name}</h1>
-
-            <div className="product-detail-price-box">
-              <span className="product-detail-price">₹{currentPrice.toLocaleString("en-IN")}</span>
+            {/* PRICE BANNER */}
+            <div className="pdp-price-box">
+              <span className="pdp-current-price">
+                ₹{currentPrice.toLocaleString("en-IN")}
+              </span>
               {hasDiscount && (
                 <>
-                  <span className="product-detail-old-price">₹{product.price.toLocaleString("en-IN")}</span>
-                  <span className="product-detail-save-badge">
-                    SAVE ₹{(product.price - product.salePrice!).toLocaleString("en-IN")}
+                  <span className="pdp-old-price">
+                    ₹{product.price.toLocaleString("en-IN")}
+                  </span>
+                  <span className="pdp-save-text">
+                    Save ₹{savingsAmount.toLocaleString("en-IN")} ({discountPercent}% OFF)
                   </span>
                 </>
               )}
             </div>
 
-            {/* Short Description */}
-            <p className="product-detail-desc">
-              {product.short_description || product.description}
-            </p>
-
-            {/* Stock indicator */}
-            <div style={{ marginBottom: 16, fontSize: 13, fontWeight: 600, color: product.stock > 0 ? "#16a34a" : "#dc2626" }}>
-              {product.stock > 0 ? `In Stock (${product.stock} available)` : "Currently Out of Stock"}
+            {/* KEY HIGHLIGHTS */}
+            <div className="pdp-highlights-wrap">
+              <h3 className="pdp-highlights-title">Key Highlights:</h3>
+              <ul className="pdp-highlights-list">
+                {highlightsList.map((item, idx) => (
+                  <li key={idx}>
+                    <span className="pdp-bullet">•</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            {/* ACTIONS */}
-            <div className="product-detail-actions">
-              <div className="product-detail-qty">
+            {/* TRUST / GUARANTEE BADGES */}
+            <div className="pdp-trust-cards-grid">
+              {/* Warranty Card */}
+              <div className="pdp-trust-card warranty">
+                <div className="pdp-trust-card-header">
+                  <ShieldCheck size={16} className="pdp-trust-icon" />
+                  <span className="pdp-trust-card-title">{warrantyTitle}</span>
+                </div>
+                <p className="pdp-trust-card-desc">{warrantyDesc}</p>
+              </div>
+
+              {/* Return Policy Card */}
+              <div className="pdp-trust-card return-policy">
+                <div className="pdp-trust-card-header">
+                  <RotateCcw size={16} className="pdp-trust-icon" />
+                  <span className="pdp-trust-card-title">{returnTitle}</span>
+                </div>
+                <p className="pdp-trust-card-desc">{returnDesc}</p>
+              </div>
+            </div>
+
+            {/* PURCHASE CONTROLS */}
+            <div className="pdp-actions-row">
+              {/* Quantity Counter */}
+              <div className="pdp-qty-counter">
                 <button
-                  className="product-detail-qty-btn"
+                  type="button"
+                  className="pdp-qty-btn"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  aria-label="Decrease quantity"
                 >
                   -
                 </button>
-                <span className="product-detail-qty-val">{quantity}</span>
+                <span className="pdp-qty-num">{quantity}</span>
                 <button
-                  className="product-detail-qty-btn"
+                  type="button"
+                  className="pdp-qty-btn"
                   onClick={() => setQuantity((q) => q + 1)}
+                  aria-label="Increase quantity"
                 >
                   +
                 </button>
               </div>
 
+              {/* Add to Cart */}
               <button
-                className="product-detail-add-btn"
+                type="button"
+                className="pdp-btn pdp-btn-cart"
                 onClick={handleAddToCart}
                 disabled={product.stock <= 0}
               >
-                <ShoppingCart size={18} strokeWidth={2} />
-                {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
+                {addedNotice ? (
+                  <>
+                    <Check size={18} /> Added to Cart!
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart size={18} /> Add to Cart
+                  </>
+                )}
+              </button>
+
+              {/* Buy Now */}
+              <button
+                type="button"
+                className="pdp-btn pdp-btn-buy"
+                onClick={handleBuyNow}
+                disabled={product.stock <= 0}
+              >
+                <Zap size={18} fill="currentColor" /> Buy Now
               </button>
             </div>
-
-            {/* TRUST BADGES */}
-            <div className="product-detail-trust-grid">
-              <div className="product-detail-trust-item">
-                <Truck size={16} />
-                <span>Fast Shipping</span>
-              </div>
-              <div className="product-detail-trust-item">
-                <ShieldCheck size={16} />
-                <span>100% Genuine</span>
-              </div>
-              <div className="product-detail-trust-item">
-                <RotateCcw size={16} />
-                <span>Easy Returns</span>
-              </div>
-            </div>
           </div>
-        </section>
+        </div>
 
-        {/* HIGHLIGHTS SECTION */}
-        {Array.isArray(product.highlights) && product.highlights.length > 0 && (
-          <section className="product-detail-section-card">
-            <h2 className="product-detail-section-title">
-              <CheckCircle size={18} style={{ color: "#2563eb", marginRight: 8, verticalAlign: "middle" }} />
-              Product Highlights
-            </h2>
-            <ul className="product-detail-highlights-list">
-              {product.highlights.map((bullet, idx) => (
-                <li key={idx}>{bullet}</li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* FULL DESCRIPTION SECTION */}
-        {Boolean(
-          product.full_description ||
-            product.fullDescription ||
-            product.description
-        ) && (
-          <section className="product-detail-section-card">
-            <h2 className="product-detail-section-title">
-              <FileText size={18} style={{ color: "#2563eb", marginRight: 8, verticalAlign: "middle" }} />
+        {/* BOTTOM SECTION: TABBED CARD CONTAINER */}
+        <div className="pdp-tabs-card">
+          {/* TAB BAR */}
+          <div className="pdp-tabs-nav">
+            <button
+              type="button"
+              className={`pdp-tab-item ${activeTab === "specifications" ? "active" : ""}`}
+              onClick={() => setActiveTab("specifications")}
+            >
+              Specifications
+            </button>
+            <button
+              type="button"
+              className={`pdp-tab-item ${activeTab === "description" ? "active" : ""}`}
+              onClick={() => setActiveTab("description")}
+            >
               Full Description
-            </h2>
-            <div
-              className="product-detail-desc"
-              dangerouslySetInnerHTML={{
-                __html:
-                  product.full_description ||
-                  product.fullDescription ||
-                  product.description ||
-                  "",
-              }}
-            />
-          </section>
-        )}
-
-        {/* SPECIFICATIONS & ATTRIBUTES */}
-        <section className="product-detail-section-card">
-          <h2 className="product-detail-section-title">Specifications & Details</h2>
-          <div className="product-detail-specs-grid">
-            <div className="product-detail-spec-item">
-              <div className="product-detail-spec-label">Brand</div>
-              <div className="product-detail-spec-value">{product.brand || "-"}</div>
-            </div>
-
-            <div className="product-detail-spec-item">
-              <div className="product-detail-spec-label">SKU</div>
-              <div className="product-detail-spec-value">{product.sku || "-"}</div>
-            </div>
-
-            {Boolean(categoryName) && (
-              <div className="product-detail-spec-item">
-                <div className="product-detail-spec-label">Category</div>
-                <div className="product-detail-spec-value">{categoryName}</div>
-              </div>
-            )}
-
-            {Boolean(subcategoryName) && (
-              <div className="product-detail-spec-item">
-                <div className="product-detail-spec-label">Subcategory</div>
-                <div className="product-detail-spec-value">{subcategoryName}</div>
-              </div>
-            )}
-
-            {Boolean(product.attributes?.color) && (
-              <div className="product-detail-spec-item">
-                <div className="product-detail-spec-label">Color</div>
-                <div className="product-detail-spec-value">{product.attributes!.color}</div>
-              </div>
-            )}
-
-            {Boolean(product.attributes?.size) && (
-              <div className="product-detail-spec-item">
-                <div className="product-detail-spec-label">Size</div>
-                <div className="product-detail-spec-value">{product.attributes!.size}</div>
-              </div>
-            )}
-
-            {Boolean(product.attributes?.material) && (
-              <div className="product-detail-spec-item">
-                <div className="product-detail-spec-label">Material</div>
-                <div className="product-detail-spec-value">{product.attributes!.material}</div>
-              </div>
-            )}
-
-            {Boolean(product.attributes?.weight?.value) && (
-              <div className="product-detail-spec-item">
-                <div className="product-detail-spec-label">Weight</div>
-                <div className="product-detail-spec-value">
-                  {product.attributes!.weight!.value} {product.attributes!.weight!.unit || "g"}
-                </div>
-              </div>
-            )}
-
-            {Boolean(
-              product.attributes?.dimensions?.length ||
-                product.attributes?.dimensions?.width ||
-                product.attributes?.dimensions?.height
-            ) && (
-              <div className="product-detail-spec-item">
-                <div className="product-detail-spec-label">Dimensions (L × W × H)</div>
-                <div className="product-detail-spec-value">
-                  {[
-                    product.attributes!.dimensions!.length,
-                    product.attributes!.dimensions!.width,
-                    product.attributes!.dimensions!.height,
-                  ]
-                    .filter(Boolean)
-                    .join(" × ")}{" "}
-                  {product.attributes!.dimensions!.unit || "cm"}
-                </div>
-              </div>
-            )}
+            </button>
+            <button
+              type="button"
+              className={`pdp-tab-item ${activeTab === "warranty" ? "active" : ""}`}
+              onClick={() => setActiveTab("warranty")}
+            >
+              Warranty & Manufacturer Info
+            </button>
           </div>
-        </section>
 
-        {/* WARRANTY & RETURN POLICY SECTION */}
-        {(product.warranty?.available || product.returnPolicy?.eligible) && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 24 }}>
-            {product.warranty?.available && (
-              <section className="product-detail-section-card">
-                <h2 className="product-detail-section-title">
-                  <ShieldCheck size={18} style={{ color: "#2563eb", marginRight: 8, verticalAlign: "middle" }} />
-                  Warranty Details
-                </h2>
-                <div style={{ fontSize: 14, color: "#334155" }}>
-                  <p style={{ margin: "0 0 8px" }}>
-                    <strong>Type:</strong> {product.warranty.type || "Standard Warranty"}
+          {/* TAB CONTENT: SPECIFICATIONS */}
+          {activeTab === "specifications" && (
+            <div className="pdp-tab-body">
+              <div className="pdp-specs-table-grid">
+                {/* Row 1 */}
+                <div className="pdp-spec-cell row-even">
+                  <span className="pdp-spec-key">Screen Size</span>
+                  <span className="pdp-spec-val">{screenSizeVal}</span>
+                </div>
+                <div className="pdp-spec-cell row-even">
+                  <span className="pdp-spec-key">Color</span>
+                  <span className="pdp-spec-val">{colorVal}</span>
+                </div>
+
+                {/* Row 2 */}
+                <div className="pdp-spec-cell row-odd">
+                  <span className="pdp-spec-key">Dimensions (L x W x H)</span>
+                  <span className="pdp-spec-val">{dimVal}</span>
+                </div>
+                <div className="pdp-spec-cell row-odd">
+                  <span className="pdp-spec-key">Material</span>
+                  <span className="pdp-spec-val">{materialVal}</span>
+                </div>
+
+                {/* Row 3 */}
+                <div className="pdp-spec-cell row-even">
+                  <span className="pdp-spec-key">Weight</span>
+                  <span className="pdp-spec-val">{weightVal}</span>
+                </div>
+                <div className="pdp-spec-cell row-even">
+                  <span className="pdp-spec-key">Manufacturer</span>
+                  <span className="pdp-spec-val">{manufacturerVal}</span>
+                </div>
+
+                {/* Additional Spec details if available */}
+                {Boolean(product.sku) && (
+                  <div className="pdp-spec-cell row-odd">
+                    <span className="pdp-spec-key">Model SKU</span>
+                    <span className="pdp-spec-val">{product.sku}</span>
+                  </div>
+                )}
+                {Boolean(categoryName) && (
+                  <div className="pdp-spec-cell row-odd">
+                    <span className="pdp-spec-key">Category</span>
+                    <span className="pdp-spec-val">
+                      {categoryName} {subcategoryName ? `› ${subcategoryName}` : ""}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB CONTENT: FULL DESCRIPTION */}
+          {activeTab === "description" && (
+            <div className="pdp-tab-body pdp-desc-tab">
+              {product.full_description || product.fullDescription || product.description ? (
+                <div
+                  className="pdp-rich-description"
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      product.full_description ||
+                      product.fullDescription ||
+                      product.description ||
+                      "",
+                  }}
+                />
+              ) : (
+                <p className="pdp-empty-desc">
+                  No extended description available for this item.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* TAB CONTENT: WARRANTY & MANUFACTURER INFO */}
+          {activeTab === "warranty" && (
+            <div className="pdp-tab-body pdp-info-tab">
+              <div className="pdp-info-tab-grid">
+                {/* Warranty Block */}
+                <div className="pdp-info-block">
+                  <h4 className="pdp-info-block-title">
+                    <ShieldCheck size={18} className="pdp-info-icon" />
+                    Warranty Coverage
+                  </h4>
+                  <p className="pdp-info-line">
+                    <strong>Type:</strong> {product.warranty?.type || "Manufacturer Warranty"}
                   </p>
-                  {product.warranty.duration && (
-                    <p style={{ margin: "0 0 8px" }}>
-                      <strong>Duration:</strong> {product.warranty.duration} {product.warranty.unit || "months"}
+                  <p className="pdp-info-line">
+                    <strong>Duration:</strong> {warrantyDuration}
+                  </p>
+                  {product.warranty?.description && (
+                    <p className="pdp-info-line text-muted">{product.warranty.description}</p>
+                  )}
+                  {product.warranty?.terms && (
+                    <p className="pdp-info-line text-muted">
+                      <strong>Terms:</strong> {product.warranty.terms}
                     </p>
                   )}
-                  {product.warranty.description && (
-                    <p style={{ margin: 0, color: "#64748b" }}>{product.warranty.description}</p>
+                </div>
+
+                {/* Return Policy Block */}
+                <div className="pdp-info-block">
+                  <h4 className="pdp-info-block-title">
+                    <RotateCcw size={18} className="pdp-info-icon" />
+                    Returns & Replacement
+                  </h4>
+                  <p className="pdp-info-line">
+                    <strong>Return Window:</strong> {returnWindow}
+                  </p>
+                  <p className="pdp-info-line">
+                    <strong>Replacement:</strong>{" "}
+                    {product.returnPolicy?.replacementAvailable !== false
+                      ? "Eligible"
+                      : "Not Available"}
+                  </p>
+                  <p className="pdp-info-line">
+                    <strong>Refund:</strong>{" "}
+                    {product.returnPolicy?.refundAvailable !== false
+                      ? "Eligible"
+                      : "Not Available"}
+                  </p>
+                  {product.returnPolicy?.description && (
+                    <p className="pdp-info-line text-muted">{product.returnPolicy.description}</p>
                   )}
                 </div>
-              </section>
-            )}
 
-            {product.returnPolicy?.eligible && (
-              <section className="product-detail-section-card">
-                <h2 className="product-detail-section-title">
-                  <RotateCcw size={18} style={{ color: "#2563eb", marginRight: 8, verticalAlign: "middle" }} />
-                  Return & Refund Policy
-                </h2>
-                <div style={{ fontSize: 14, color: "#334155" }}>
-                  {product.returnPolicy.returnWindow && (
-                    <p style={{ margin: "0 0 8px" }}>
-                      <strong>Return Window:</strong> {product.returnPolicy.returnWindow} {product.returnPolicy.returnWindowUnit || "days"}
+                {/* Manufacturer Block */}
+                {Boolean(product.manufacturer?.name) && (
+                  <div className="pdp-info-block">
+                    <h4 className="pdp-info-block-title">
+                      <Sparkles size={18} className="pdp-info-icon" />
+                      Manufacturer Details
+                    </h4>
+                    <p className="pdp-info-line">
+                      <strong>Company:</strong> {product.manufacturer!.name}
                     </p>
-                  )}
-                  <p style={{ margin: "0 0 8px" }}>
-                    <strong>Replacement:</strong> {product.returnPolicy.replacementAvailable !== false ? "Available" : "Not Available"}
-                  </p>
-                  <p style={{ margin: "0 0 8px" }}>
-                    <strong>Refund:</strong> {product.returnPolicy.refundAvailable !== false ? "Available" : "Not Available"}
-                  </p>
-                  {product.returnPolicy.description && (
-                    <p style={{ margin: 0, color: "#64748b" }}>{product.returnPolicy.description}</p>
-                  )}
-                </div>
-              </section>
-            )}
-          </div>
-        )}
-
-        {/* MANUFACTURER SECTION */}
-        {Boolean(product.manufacturer?.name) && (
-          <section className="product-detail-section-card">
-            <h2 className="product-detail-section-title">
-              <Building size={18} style={{ color: "#2563eb", marginRight: 8, verticalAlign: "middle" }} />
-              Manufacturer Information
-            </h2>
-            <div className="product-detail-specs-grid">
-              <div className="product-detail-spec-item">
-                <div className="product-detail-spec-label">Manufacturer</div>
-                <div className="product-detail-spec-value">{product.manufacturer!.name}</div>
+                    {Boolean(product.manufacturer?.country) && (
+                      <p className="pdp-info-line">
+                        <strong>Country of Origin:</strong> {product.manufacturer!.country}
+                      </p>
+                    )}
+                    {Boolean(product.manufacturer?.contact) && (
+                      <p className="pdp-info-line">
+                        <strong>Contact / Helpline:</strong> {product.manufacturer!.contact}
+                      </p>
+                    )}
+                    {Boolean(product.manufacturer?.email) && (
+                      <p className="pdp-info-line">
+                        <strong>Email:</strong> {product.manufacturer!.email}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
-              {Boolean(product.manufacturer?.country) && (
-                <div className="product-detail-spec-item">
-                  <div className="product-detail-spec-label">Country of Origin</div>
-                  <div className="product-detail-spec-value">{product.manufacturer!.country}</div>
-                </div>
-              )}
-              {Boolean(product.manufacturer?.contact) && (
-                <div className="product-detail-spec-item">
-                  <div className="product-detail-spec-label">Contact</div>
-                  <div className="product-detail-spec-value">{product.manufacturer!.contact}</div>
-                </div>
-              )}
-              {Boolean(product.manufacturer?.email) && (
-                <div className="product-detail-spec-item">
-                  <div className="product-detail-spec-label">Email</div>
-                  <div className="product-detail-spec-value">{product.manufacturer!.email}</div>
-                </div>
-              )}
             </div>
-          </section>
-        )}
-      </main>
+          )}
+        </div>
+      </div>
 
       <Footer />
     </div>

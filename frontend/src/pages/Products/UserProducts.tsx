@@ -9,6 +9,8 @@ import {
   SlidersHorizontal,
   X,
   Heart,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { useCart } from "../../context/cartContext";
 import Footer from "../Home/footersection";
@@ -21,10 +23,10 @@ import "./UserProducts.css";
 type ProductImageItem =
   | string
   | {
-      public_id?: string;
-      url?: string;
-      _id?: string;
-    };
+    public_id?: string;
+    url?: string;
+    _id?: string;
+  };
 
 interface Product {
   _id: string;
@@ -58,7 +60,7 @@ const CATEGORIES = [
 ];
 
 // =====================================================
-// SORT OPTIONS - 3 SPECIFIC OPTIONS WITH DESELECT SUPPORT
+// SORT OPTIONS
 // =====================================================
 
 const SORT_OPTIONS = [
@@ -68,12 +70,14 @@ const SORT_OPTIONS = [
 ];
 
 // =====================================================
-// API BASE URL
+// API BASE URL & ITEMS PER PAGE
 // =====================================================
 
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "http://localhost:5000";
+
+const ITEMS_PER_PAGE = 12;
 
 // =====================================================
 // IMAGE URL FORMATTER
@@ -89,9 +93,9 @@ const formatImageUrl = (
     typeof path === "string"
       ? path
       : path.url ||
-        (path as any).secure_url ||
-        (path as any).path ||
-        "";
+      (path as any).secure_url ||
+      (path as any).path ||
+      "";
 
   if (!rawUrl || typeof rawUrl !== "string") {
     return fallback;
@@ -128,6 +132,10 @@ const UserProducts = () => {
   const [sortBy, setSortBy] = useState(""); // Default unselected
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [serverTotalPages, setServerTotalPages] = useState<number | null>(null);
+
   // Mobile Bottom Sheet Modal State
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<"filter" | "sort">("filter");
@@ -136,6 +144,7 @@ const UserProducts = () => {
   useEffect(() => {
     const catParam = searchParams.get("category");
     const searchParam = searchParams.get("search");
+    const pageParam = searchParams.get("page");
 
     if (catParam) {
       const match = CATEGORIES.find(
@@ -154,6 +163,12 @@ const UserProducts = () => {
       setSearchQuery(searchParam);
     } else {
       setSearchQuery("");
+    }
+
+    if (pageParam && !isNaN(Number(pageParam))) {
+      setCurrentPage(Number(pageParam));
+    } else {
+      setCurrentPage(1);
     }
   }, [searchParams]);
 
@@ -174,6 +189,9 @@ const UserProducts = () => {
           queryParams.append("sort", sortBy);
         }
 
+        queryParams.append("page", String(currentPage));
+        queryParams.append("limit", String(ITEMS_PER_PAGE));
+
         const queryString = queryParams.toString();
         const url = `${API_BASE_URL}/api/products${queryString ? `?${queryString}` : ""}`;
 
@@ -188,8 +206,12 @@ const UserProducts = () => {
 
         if (res.ok && Array.isArray(rawProducts)) {
           setProducts(rawProducts);
+          if (result.data?.pagination?.totalPages) {
+            setServerTotalPages(result.data.pagination.totalPages);
+          } else {
+            setServerTotalPages(null);
+          }
         } else {
-          // If category/search filtered query yields empty from backend, fallback to main fetch to allow client filter
           if (queryString) {
             const fallbackRes = await fetch(`${API_BASE_URL}/api/products`);
             const fallbackResult = await fallbackRes.json();
@@ -202,25 +224,33 @@ const UserProducts = () => {
           } else {
             setProducts([]);
           }
+          setServerTotalPages(null);
         }
       } catch (err) {
         console.error("Failed to fetch user products:", err);
         setProducts([]);
+        setServerTotalPages(null);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, [searchQuery, selectedCategory, sortBy]);
+  }, [searchQuery, selectedCategory, sortBy, currentPage]);
 
   // Toggle/Deselect Sort Option
   const handleSortToggle = (optionId: string) => {
     if (sortBy === optionId) {
-      setSortBy(""); // deselect sort option
+      setSortBy("");
     } else {
       setSortBy(optionId);
     }
+    setCurrentPage(1);
+  };
+
+  const handleCategorySelect = (catId: string) => {
+    setSelectedCategory(catId);
+    setCurrentPage(1);
   };
 
   // Filter & Sort
@@ -250,7 +280,7 @@ const UserProducts = () => {
       return matchesCat && matchesSearch;
     })
     .sort((a, b) => {
-      if (!sortBy) return 0; // Unsorted default catalog order
+      if (!sortBy) return 0;
 
       const priceA = a.salePrice !== null && a.salePrice !== undefined ? a.salePrice : a.price;
       const priceB = b.salePrice !== null && b.salePrice !== undefined ? b.salePrice : b.price;
@@ -261,11 +291,28 @@ const UserProducts = () => {
       return 0;
     });
 
+  // Calculate Total Pages
+  const calculatedTotalPages = serverTotalPages !== null
+    ? serverTotalPages
+    : Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+
+  // Determine Paginated Display List
+  const displayedProducts = serverTotalPages !== null
+    ? filteredProducts
+    : filteredProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
   const handleResetFilters = () => {
     setSelectedCategory("all");
     setSearchQuery("");
     setSortBy("");
+    setCurrentPage(1);
     setIsMobileFilterOpen(false);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > calculatedTotalPages) return;
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   };
 
   const toggleWishlist = (e: React.MouseEvent, id: string) => {
@@ -308,7 +355,7 @@ const UserProducts = () => {
                       key={cat.id}
                       type="button"
                       className={`category-item ${isActive ? "active" : ""}`}
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => handleCategorySelect(cat.id)}
                     >
                       <span>{cat.label}</span>
                       {isActive && <Check size={16} className="active-icon" />}
@@ -365,7 +412,7 @@ const UserProducts = () => {
                       key={cat.id}
                       type="button"
                       className={`chip-pill ${isActive ? "active" : ""}`}
-                      onClick={() => setSelectedCategory(cat.id)}
+                      onClick={() => handleCategorySelect(cat.id)}
                     >
                       {cat.label}
                     </button>
@@ -402,7 +449,7 @@ const UserProducts = () => {
                     </div>
                   ))}
                 </>
-              ) : filteredProducts.length === 0 ? (
+              ) : displayedProducts.length === 0 ? (
                 <div className="user-products-empty">
                   <h3>No products found</h3>
                   <p>No products match your search or selected filters.</p>
@@ -414,12 +461,13 @@ const UserProducts = () => {
                   </button>
                 </div>
               ) : (
-                filteredProducts.map((product) => {
+                displayedProducts.map((product) => {
                   const currentPrice =
                     product.salePrice !== null && product.salePrice !== undefined
                       ? product.salePrice
                       : product.price;
 
+                  const brand = product.brand
                   const hasDiscount =
                     product.salePrice !== null &&
                     product.salePrice !== undefined &&
@@ -429,10 +477,10 @@ const UserProducts = () => {
                     ? Math.round(((product.price - product.salePrice!) / product.price) * 100)
                     : 0;
 
-                  const categoryName =
-                    typeof product.category === "object"
-                      ? product.category?.name || "General"
-                      : String(product.category || "General");
+                  // const categoryName =
+                  //   typeof product.category === "object"
+                  //     ? product.category?.name || "General"
+                  //     : String(product.category || "General");
 
                   const imgUrl = formatImageUrl(product.images?.[0]);
                   const isLiked = !!wishlist[product._id];
@@ -469,7 +517,7 @@ const UserProducts = () => {
 
                       <div className="user-product-info">
                         <div className="user-product-meta">
-                          <span className="user-product-category">{categoryName}</span>
+                          <span className="user-product-category">{brand}</span>
                           {hasDiscount && (
                             <span className="user-product-discount-tag">-{discountPercent}%</span>
                           )}
@@ -505,6 +553,49 @@ const UserProducts = () => {
                 })
               )}
             </div>
+
+            {/* PAGINATION CONTROLS */}
+            {!loading && calculatedTotalPages > 1 && (
+              <div className="user-products-pagination">
+                <button
+                  type="button"
+                  className="pagination-btn nav-btn"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  aria-label="Previous Page"
+                >
+                  <ChevronLeft size={16} />
+                  <span>Prev</span>
+                </button>
+
+                <div className="pagination-numbers">
+                  {Array.from({ length: calculatedTotalPages }).map((_, index) => {
+                    const pageNum = index + 1;
+                    return (
+                      <button
+                        key={pageNum}
+                        type="button"
+                        className={`pagination-btn num-btn ${pageNum === currentPage ? "active" : ""}`}
+                        onClick={() => handlePageChange(pageNum)}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  type="button"
+                  className="pagination-btn nav-btn"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === calculatedTotalPages}
+                  aria-label="Next Page"
+                >
+                  <span>Next</span>
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
           </section>
         </div>
       </main>
@@ -572,7 +663,7 @@ const UserProducts = () => {
                           type="button"
                           className={`category-item ${isActive ? "active" : ""}`}
                           onClick={() => {
-                            setSelectedCategory(cat.id);
+                            handleCategorySelect(cat.id);
                           }}
                         >
                           <span>{cat.label}</span>

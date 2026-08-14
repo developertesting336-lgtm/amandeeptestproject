@@ -163,12 +163,12 @@
   position: relative;
   width: 100%;
   max-width: 205px;
-  height: auto;
+  height: 100%;
   min-height: auto;
   background: transparent;
   border: 0.2px solid #e2e8f0;
-  border-radius: 0;
-  overflow: visible;
+  border-radius: 10px;
+  overflow: hidden;
   cursor: pointer;
   box-sizing: border-box;
   box-shadow: none !important;
@@ -180,8 +180,8 @@
 
 .product-card:hover {
   transform: translateY(-6px);
-  border: none !important;
-  box-shadow: none !important;
+  border-color: transparent !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* IMAGE WRAPPER (SLIGHT BG COLOR WITH RADIUS) */
@@ -189,7 +189,7 @@
 .product-image-wrap {
   position: relative;
   width: 100%;
-  height: 160px;
+  height: 147px;
   overflow: hidden;
   background-color: #f9f9f9;
   display: flex;
@@ -198,7 +198,7 @@
   padding: 8px;
   box-sizing: border-box;
   border: none !important;
-  border-radius: 14px;
+  border-radius: 10px;
   flex-shrink: 0;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
@@ -267,9 +267,10 @@
 /* PRODUCT DETAILS BELOW IMAGE */
 
 .product-info {
-  padding: 4px 2px 0;
+  padding: 8px 10px 10px 10px;
   display: flex;
   flex-direction: column;
+  flex: 1;
   justify-content: flex-start;
   gap: 2px;
   box-sizing: border-box;
@@ -280,7 +281,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0;
+  min-height: 20px;
+  margin-bottom: 2px;
 }
 
 .product-category {
@@ -303,12 +305,12 @@
   font-size: 13px;
   font-weight: 700;
   line-height: 1.35;
+  height: 35.1px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 0;
-  max-height: 36px;
+  word-break: break-word;
   transition: color 0.25s ease;
 }
 
@@ -323,7 +325,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  margin-top: 3px;
+  margin-top: auto;
+  padding-top: 6px;
 }
 
 .product-price-row {
@@ -407,7 +410,7 @@
   border-radius: 50%;
   background-color: #cbd5e1;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.1s ease;
 }
 
 .product-slider-dot:hover {
@@ -447,6 +450,7 @@
   0% {
     background-position: -200px 0;
   }
+
   100% {
     background-position: calc(200px + 100%) 0;
   }

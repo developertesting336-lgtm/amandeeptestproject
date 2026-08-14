@@ -28,7 +28,7 @@ export const getProducts = async (req, res) => {
 
 
 
-    console.log(search)
+    // console.log(search)
     // console.log(search.trim())
 
     if (search && search.trim()) {
@@ -83,7 +83,6 @@ export const getProducts = async (req, res) => {
       if (categoryDoc) {
         filter.category = categoryDoc._id;
       } else {
-        // If category is not in DB, search by category name regex on products directly or return empty result
         filter.$or = [
           { categoryName: { $regex: escapedCategory, $options: "i" } },
           { "category.name": { $regex: escapedCategory, $options: "i" } },

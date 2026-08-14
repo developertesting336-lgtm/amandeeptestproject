@@ -143,7 +143,7 @@ export const addProduct = async (req, res) => {
       });
     }
 
-    console.log(req.files)
+    // console.log(req.files)
 
 
     if (!req.files || req.files.length === 0) {
@@ -582,7 +582,8 @@ export const updateProduct = async (req, res) => {
     } = req.body;
 
 
-
+    console.log("files", req.files) 
+    // console.log("body", req.body)
 
     const product = await Product.findById(productId);
 
@@ -856,6 +857,7 @@ export const updateProduct = async (req, res) => {
       const images = [];
 
       for (const file of req.files) {
+        // console.log(file)
         const image =
           await uploadBufferToCloudinary(
             file.buffer,
@@ -868,6 +870,7 @@ export const updateProduct = async (req, res) => {
       product.images = images;
     }
 
+    // console.log(images)
 
 
 

@@ -138,8 +138,6 @@ const AddProduct = () => {
   // Images state
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
-  const [imageUrlInputs, setImageUrlInputs] = useState<string[]>([]);
-  const [imageUrlText, setImageUrlText] = useState("");
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
@@ -205,18 +203,19 @@ const AddProduct = () => {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    const combinedFiles = [...images, ...files].slice(0, 10);
-    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    const remainingSlots = Math.max(0, 5 - images.length);
+    if (remainingSlots <= 0) {
+      setError("Maximum 5 images allowed in total.");
+      e.target.value = "";
+      return;
+    }
 
-    setImages(combinedFiles);
-    setPreviews((prev) => [...prev, ...newPreviews].slice(0, 10));
+    const filesToUpload = files.slice(0, remainingSlots);
+    const newPreviews = filesToUpload.map((file) => URL.createObjectURL(file));
+
+    setImages((prev) => [...prev, ...filesToUpload]);
+    setPreviews((prev) => [...prev, ...newPreviews]);
     e.target.value = "";
-  };
-
-  const handleAddImageUrl = () => {
-    if (!imageUrlText.trim()) return;
-    setImageUrlInputs((prev) => [...prev, imageUrlText.trim()]);
-    setImageUrlText("");
   };
 
   const removeImage = (index: number) => {
@@ -225,10 +224,6 @@ const AddProduct = () => {
       URL.revokeObjectURL(prev[index]);
       return prev.filter((_, i) => i !== index);
     });
-  };
-
-  const removeImageUrl = (index: number) => {
-    setImageUrlInputs((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleHighlightChange = (index: number, val: string) => {
@@ -311,40 +306,6 @@ const AddProduct = () => {
       );
 
 
-      const formattedImages: Array<{
-        public_id: string;
-        url: string;
-        alt: string;
-        isPrimary: boolean;
-      }> = [];
-
-
-      imageUrlInputs.forEach((url, i) => {
-        formattedImages.push({
-          public_id: `img_url_${Date.now()}_${i}`,
-          url,
-          alt: form.name,
-          isPrimary: formattedImages.length === 0,
-        });
-      });
-
-
-      for (let i = 0; i < images.length; i++) {
-        const file = images[i];
-        const dataUrl = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(file);
-        });
-
-        formattedImages.push({
-          public_id: `img_file_${Date.now()}_${i}`,
-          url: dataUrl,
-          alt: form.name,
-          isPrimary: formattedImages.length === 0,
-        });
-      }
-
       const productPayload = {
         name: form.name.trim(),
         short_description: form.short_description.trim(),
@@ -407,7 +368,6 @@ const AddProduct = () => {
             unit: form.attributes.dimUnit,
           },
         },
-        images: formattedImages,
         isFeatured: form.isFeatured,
         isActive: form.isActive,
       };
@@ -435,10 +395,6 @@ const AddProduct = () => {
       formData.append("returnPolicy", JSON.stringify(productPayload.returnPolicy));
       formData.append("attributes", JSON.stringify(productPayload.attributes));
 
-      if (imageUrlInputs.length > 0) {
-        formData.append("imageUrlInputs", JSON.stringify(imageUrlInputs));
-      }
-
       // Append each raw file to "images" field so Express multer parses req.files
       images.forEach((file) => {
         formData.append("images", file);
@@ -451,7 +407,6 @@ const AddProduct = () => {
         },
         body: formData,
       });
-      console.log(formData)
 
       // Fallback try to /api/admin/add/products
       if (!res.ok) {
@@ -474,7 +429,6 @@ const AddProduct = () => {
       setForm(INITIAL_STATE);
       setImages([]);
       setPreviews([]);
-      setImageUrlInputs([]);
 
       setTimeout(() => {
         navigate("/admin/products");
@@ -1241,32 +1195,11 @@ const AddProduct = () => {
 
           {/* Product Images */}
           <div className="form-card">
-            <h2 className="form-card-title">Product Images</h2>
-
-            <div className="form-group">
-              <label htmlFor="imageUrl">Add Image URL</label>
-              <div style={{ display: "flex", gap: 6 }}>
-                <input
-                  id="imageUrl"
-                  type="text"
-                  placeholder="https://..."
-                  value={imageUrlText}
-                  onChange={(e) => setImageUrlText(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="btn-add-highlight"
-                  onClick={handleAddImageUrl}
-                  style={{ marginTop: 0 }}
-                >
-                  Add
-                </button>
-              </div>
-            </div>
+            <h2 className="form-card-title">Product Images (Max 5)</h2>
 
             <label className="image-dropzone">
               <UploadCloud size={24} />
-              <span>Or Choose Files From Device</span>
+              <span>Choose Device Files</span>
               <small>PNG, JPG up to 5MB each</small>
               <input
                 type="file"
@@ -1277,28 +1210,13 @@ const AddProduct = () => {
               />
             </label>
 
-            {/* Combined Previews */}
-            {(previews.length > 0 || imageUrlInputs.length > 0) && (
+            {/* Previews */}
+            {previews.length > 0 && (
               <div className="image-preview-grid">
-                {imageUrlInputs.map((url, i) => (
-                  <div className="image-preview" key={`url_${i}`}>
-                    <img src={url} alt={`URL ${i}`} />
-                    {i === 0 && <span className="primary-badge">Primary</span>}
-                    <button
-                      type="button"
-                      className="image-remove-btn"
-                      onClick={() => removeImageUrl(i)}
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
                 {previews.map((src, i) => (
                   <div className="image-preview" key={`file_${i}`}>
                     <img src={src} alt={`File ${i}`} />
-                    {imageUrlInputs.length === 0 && i === 0 && (
-                      <span className="primary-badge">Primary</span>
-                    )}
+                    {i === 0 && <span className="primary-badge">Primary</span>}
                     <button
                       type="button"
                       className="image-remove-btn"
