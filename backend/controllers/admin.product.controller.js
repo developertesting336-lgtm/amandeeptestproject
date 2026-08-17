@@ -4,6 +4,81 @@ import Category from "../models/Category.js";
 import uploadBufferToCloudinary from "../utils/uploadToCloudinary.js";
 
 
+export const toggleProductActive = async (req, res) => {
+  try {
+    const { productID } = req.params;
+
+    const product = await Product.findById(productID);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    product.isActive = !product.isActive;
+
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Product is now ${product.isActive ? "active" : "inactive"}`,
+      data: {
+        productId: product._id,
+        isActive: product.isActive,
+      },
+    });
+  } catch (error) {
+    console.error("Toggle product active status error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update product active status",
+      error: error.message,
+    });
+  }
+};
+
+export const toggleProductFeatured = async (req, res) => {
+  try {
+    const { productID } = req.params;
+
+    const product = await Product.findById(productID);
+
+    console.log(product)
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Product not found",
+      });
+    }
+
+    product.isFeatured = !product.isFeatured;
+
+    await product.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Product is now ${product.isFeatured ? "featured" : "not featured"
+        }`,
+      data: {
+        productId: product._id,
+        isFeatured: product.isFeatured,
+      },
+    });
+  } catch (error) {
+    console.error("Toggle product featured status error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update product featured status",
+      error: error.message,
+    });
+  }
+};
+
 
 
 export const addProduct = async (req, res) => {
@@ -582,7 +657,7 @@ export const updateProduct = async (req, res) => {
     } = req.body;
 
 
-    console.log("files", req.files) 
+    console.log("files", req.files)
     // console.log("body", req.body)
 
     const product = await Product.findById(productId);

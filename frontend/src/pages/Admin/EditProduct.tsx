@@ -24,10 +24,10 @@ interface WarrantyState {
   duration: string;
   unit: "days" | "months" | "years";
   type:
-    | "Manufacturer Warranty"
-    | "Seller Warranty"
-    | "Brand Warranty"
-    | "No Warranty";
+  | "Manufacturer Warranty"
+  | "Seller Warranty"
+  | "Brand Warranty"
+  | "No Warranty";
   description: string;
   terms: string;
 }
@@ -265,8 +265,8 @@ const EditProduct = () => {
           Array.isArray(rawData)
             ? rawData[0]
             : rawData && typeof rawData === "object" && rawData.product
-            ? rawData.product
-            : rawData;
+              ? rawData.product
+              : rawData;
 
         if (!prod || typeof prod !== "object") {
           throw new Error("Invalid product data received from backend.");
@@ -332,12 +332,12 @@ const EditProduct = () => {
           const m =
             typeof prod.manufacturer === "string"
               ? (() => {
-                  try {
-                    return JSON.parse(prod.manufacturer);
-                  } catch {
-                    return {};
-                  }
-                })()
+                try {
+                  return JSON.parse(prod.manufacturer);
+                } catch {
+                  return {};
+                }
+              })()
               : prod.manufacturer;
 
           setManufacturer({
@@ -354,12 +354,12 @@ const EditProduct = () => {
           const w =
             typeof prod.warranty === "string"
               ? (() => {
-                  try {
-                    return JSON.parse(prod.warranty);
-                  } catch {
-                    return {};
-                  }
-                })()
+                try {
+                  return JSON.parse(prod.warranty);
+                } catch {
+                  return {};
+                }
+              })()
               : prod.warranty;
 
           setWarranty({
@@ -376,12 +376,12 @@ const EditProduct = () => {
           const r =
             typeof prod.returnPolicy === "string"
               ? (() => {
-                  try {
-                    return JSON.parse(prod.returnPolicy);
-                  } catch {
-                    return {};
-                  }
-                })()
+                try {
+                  return JSON.parse(prod.returnPolicy);
+                } catch {
+                  return {};
+                }
+              })()
               : prod.returnPolicy;
 
           setReturnPolicy({
@@ -399,12 +399,12 @@ const EditProduct = () => {
           const a =
             typeof prod.attributes === "string"
               ? (() => {
-                  try {
-                    return JSON.parse(prod.attributes);
-                  } catch {
-                    return {};
-                  }
-                })()
+                try {
+                  return JSON.parse(prod.attributes);
+                } catch {
+                  return {};
+                }
+              })()
               : prod.attributes;
 
           setAttributes({
@@ -426,15 +426,15 @@ const EditProduct = () => {
         const rawImages = prod.images || [];
         const formattedImgList: ProductImageItem[] = Array.isArray(rawImages)
           ? rawImages.map((img: any, i: number) =>
-              typeof img === "string"
-                ? { public_id: `img_${i}`, url: img }
-                : {
-                    public_id: img.public_id || img._id || img.url || `img_${i}`,
-                    url: img.url || img.path || img.secure_url || "",
-                    alt: img.alt || prod.name,
-                    isPrimary: Boolean(img.isPrimary || i === 0),
-                  }
-            )
+            typeof img === "string"
+              ? { public_id: `img_${i}`, url: img }
+              : {
+                public_id: img.public_id || img._id || img.url || `img_${i}`,
+                url: img.url || img.path || img.secure_url || "",
+                alt: img.alt || prod.name,
+                isPrimary: Boolean(img.isPrimary || i === 0),
+              }
+          )
           : [];
         setExistingImages(formattedImgList);
       } catch (err) {
@@ -804,7 +804,7 @@ const EditProduct = () => {
 
             <div className="edit-row">
               <div className="edit-group">
-                <label htmlFor="edit-price">Regular Price ($) *</label>
+                <label htmlFor="edit-price">Regular Price (₹) *</label>
                 <input
                   id="edit-price"
                   type="number"
@@ -817,7 +817,7 @@ const EditProduct = () => {
               </div>
 
               <div className="edit-group">
-                <label htmlFor="edit-saleprice">Sale Price ($)</label>
+                <label htmlFor="edit-saleprice">Sale Price (₹)</label>
                 <input
                   id="edit-saleprice"
                   type="number"

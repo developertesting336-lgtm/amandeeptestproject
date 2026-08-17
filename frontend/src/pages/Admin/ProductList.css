@@ -520,6 +520,165 @@
   font-size: 15px;
 }
 
+/* =====================================================
+   ADMIN THEME TOGGLE BADGES (ACTIVE & FEATURED)
+===================================================== */
+
+.admin-toggle-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 10px 3px 4px;
+  border-radius: 16px;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  background: transparent;
+  white-space: nowrap;
+}
+
+.admin-toggle-badge:focus-visible {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.3);
+}
+
+.admin-toggle-badge:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Active Badge State */
+.admin-toggle-badge.active {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.admin-toggle-badge.active:hover:not(:disabled) {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15);
+}
+
+/* Inactive Badge State */
+.admin-toggle-badge.inactive {
+  background: #f8fafc;
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+.admin-toggle-badge.inactive:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Featured Badge State */
+.admin-toggle-badge.featured {
+  background: #fffbe6;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+.admin-toggle-badge.featured:hover:not(:disabled) {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.15);
+}
+
+/* Standard (Not Featured) Badge State */
+.admin-toggle-badge.standard {
+  background: #f8fafc;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+}
+
+.admin-toggle-badge.standard:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #64748b;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* Toggle Mini Track */
+.toggle-badge-track {
+  width: 28px;
+  height: 16px;
+  border-radius: 12px;
+  background-color: #cbd5e1;
+  padding: 1.5px;
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.admin-toggle-badge.active .toggle-badge-track {
+  background-color: #2563eb;
+}
+
+.admin-toggle-badge.featured .toggle-badge-track {
+  background-color: #f59e0b;
+}
+
+.admin-toggle-badge.inactive .toggle-badge-track,
+.admin-toggle-badge.standard .toggle-badge-track {
+  background-color: #cbd5e1;
+}
+
+/* Toggle Mini Thumb */
+.toggle-badge-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(0);
+}
+
+.admin-toggle-badge.active .toggle-badge-thumb,
+.admin-toggle-badge.featured .toggle-badge-thumb {
+  transform: translateX(12px);
+}
+
+/* Spinners and Icons inside thumb */
+.toggle-badge-spinner {
+  color: #64748b;
+}
+
+.admin-toggle-badge.active .toggle-badge-spinner {
+  color: #2563eb;
+}
+
+.admin-toggle-badge.featured .toggle-badge-spinner {
+  color: #f59e0b;
+}
+
+.toggle-star-icon {
+  color: #f59e0b;
+  fill: #f59e0b;
+}
+
+/* Toggle Label */
+.toggle-badge-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
 /* Actions */
 .product-actions {
   display: flex;

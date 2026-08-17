@@ -10,8 +10,9 @@ import {
   ChevronsRight,
   Loader2,
   RefreshCw,
+  Star,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import "./ProductList.css";
 
 interface Category {
@@ -68,12 +69,20 @@ const ProductList = () => {
   const navigate = useNavigate();
 
   const [allFetchedProducts, setAllFetchedProducts] = useState<Product[]>([]);
-  const [currentPage, setCurrentPage] = useState<number>(1);
+  // const [currentPage, setCurrentPage] = useState<number>(1)
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const currentPage = Math.max(
+    1,
+    Number(searchParams.get("page")) || 1
+  );
   const [perPage, setPerPage] = useState<number>(10);
   const [search, setSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingActiveId, setTogglingActiveId] = useState<string | null>(null);
+  const [togglingFeaturedId, setTogglingFeaturedId] = useState<string | null>(null);
 
   // Server-side pagination state (if API provides server-side pagination)
   const [serverPagination, setServerPagination] = useState<{
@@ -239,29 +248,60 @@ const ProductList = () => {
   const displayedProducts = isServerPaginated
     ? filteredProducts
     : filteredProducts.slice(
-        (currentPage - 1) * perPage,
-        currentPage * perPage
-      );
+      (currentPage - 1) * perPage,
+      currentPage * perPage
+    );
 
   const hasPreviousPage = currentPage > 1;
   const hasNextPage = currentPage < totalPages;
 
+  // const handlePageChange = (newPage: number) => {
+  //   if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+  //     setCurrentPage(newPage);
+  //     window.scrollTo({ top: 0, behavior: "smooth" });
+  //   }
+  // };
   const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
-      setCurrentPage(newPage);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (
+      newPage >= 1 &&
+      newPage <= totalPages &&
+      newPage !== currentPage
+    ) {
+      setSearchParams((prev) => {
+        const params = new URLSearchParams(prev);
+        params.set("page", String(newPage));
+        return params;
+      });
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     }
   };
 
-  const handlePerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newLimit = Number(e.target.value);
-    setPerPage(newLimit);
-    setCurrentPage(1); // Reset to page 1 on per-page change
+  const resetToFirstPage = () => {
+    setSearchParams((prev) => {
+      const params = new URLSearchParams(prev);
+      params.set("page", "1");
+      return params;
+    });
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePerPageChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const newLimit = Number(e.target.value);
+
+    setPerPage(newLimit);
+    resetToFirstPage();
+  };
+
+  const handleSearchChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setSearch(e.target.value);
-    setCurrentPage(1); // Reset to page 1 on new search
+    resetToFirstPage();
   };
 
   const handleDelete = async (productId: string) => {
@@ -322,6 +362,112 @@ const ProductList = () => {
       alert(err instanceof Error ? err.message : "Failed to delete product");
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleToggleActive = async (
+    productId: string,
+    currentActiveStatus: boolean
+  ) => {
+    try {
+      setTogglingActiveId(productId);
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/active/${productId}`,
+        {
+          method: "PUT",
+          headers,
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || result.success === false) {
+        throw new Error(
+          result.message || "Failed to update product active status"
+        );
+      }
+
+      const updatedStatus =
+        typeof result.data?.isActive === "boolean"
+          ? result.data.isActive
+          : typeof result.product?.isActive === "boolean"
+          ? result.product.isActive
+          : !currentActiveStatus;
+
+      setAllFetchedProducts((prev) =>
+        prev.map((item) =>
+          item._id === productId ? { ...item, isActive: updatedStatus } : item
+        )
+      );
+    } catch (err) {
+      console.error("Toggle active error:", err);
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Failed to toggle product active status"
+      );
+    } finally {
+      setTogglingActiveId(null);
+    }
+  };
+
+  const handleToggleFeatured = async (
+    productId: string,
+    currentFeaturedStatus: boolean
+  ) => {
+    try {
+      setTogglingFeaturedId(productId);
+      const token = localStorage.getItem("token");
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/featured/${productId}`,
+        {
+          method: "PUT",
+          headers,
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || result.success === false) {
+        throw new Error(
+          result.message || "Failed to update product featured status"
+        );
+      }
+
+      const updatedStatus =
+        typeof result.data?.isFeatured === "boolean"
+          ? result.data.isFeatured
+          : typeof result.product?.isFeatured === "boolean"
+          ? result.product.isFeatured
+          : !currentFeaturedStatus;
+
+      setAllFetchedProducts((prev) =>
+        prev.map((item) =>
+          item._id === productId
+            ? { ...item, isFeatured: updatedStatus }
+            : item
+        )
+      );
+    } catch (err) {
+      console.error("Toggle featured error:", err);
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Failed to toggle product featured status"
+      );
+    } finally {
+      setTogglingFeaturedId(null);
     }
   };
 
@@ -410,7 +556,10 @@ const ProductList = () => {
               className="clear-search-btn"
               onClick={() => {
                 setSearch("");
-                setCurrentPage(1);
+
+                const params = new URLSearchParams(searchParams);
+                params.set("page", "1");
+                setSearchParams(params);
               }}
             >
               Clear
@@ -468,7 +617,10 @@ const ProductList = () => {
               className="btn-ghost"
               onClick={() => {
                 setSearch("");
-                setCurrentPage(1);
+
+                const params = new URLSearchParams(searchParams);
+                params.set("page", "1");
+                setSearchParams(params);
               }}
               style={{ marginTop: 12 }}
             >
@@ -562,9 +714,9 @@ const ProductList = () => {
                     <td>
                       <div className="price-cell">
                         {product.salePrice !== null &&
-                        product.salePrice !== undefined &&
-                        product.salePrice > 0 &&
-                        product.salePrice < product.price ? (
+                          product.salePrice !== undefined &&
+                          product.salePrice > 0 &&
+                          product.salePrice < product.price ? (
                           <>
                             <strong>
                               ₹{Number(product.salePrice).toLocaleString("en-IN")}
@@ -584,13 +736,12 @@ const ProductList = () => {
                     {/* Stock */}
                     <td>
                       <span
-                        className={`stock-badge ${
-                          product.stock === 0
-                            ? "out"
-                            : product.stock <= 10
+                        className={`stock-badge ${product.stock === 0
+                          ? "out"
+                          : product.stock <= 10
                             ? "low"
                             : "available"
-                        }`}
+                          }`}
                       >
                         {product.stock === 0
                           ? "Out of stock"
@@ -600,22 +751,74 @@ const ProductList = () => {
 
                     {/* Status */}
                     <td>
-                      <span
-                        className={`status-badge ${
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={product.isActive !== false}
+                        className={`admin-toggle-badge ${
                           product.isActive !== false ? "active" : "inactive"
                         }`}
+                        onClick={() =>
+                          handleToggleActive(
+                            product._id,
+                            product.isActive !== false
+                          )
+                        }
+                        disabled={togglingActiveId === product._id}
+                        title={
+                          product.isActive !== false
+                            ? "Active — Click to set Inactive"
+                            : "Inactive — Click to set Active"
+                        }
                       >
-                        {product.isActive !== false ? "Active" : "Inactive"}
-                      </span>
+                        <span className="toggle-badge-track">
+                          <span className="toggle-badge-thumb">
+                            {togglingActiveId === product._id ? (
+                              <Loader2 size={8} className="toggle-badge-spinner spin" />
+                            ) : null}
+                          </span>
+                        </span>
+                        <span className="toggle-badge-label">
+                          {product.isActive !== false ? "Active" : "Inactive"}
+                        </span>
+                      </button>
                     </td>
 
                     {/* Featured */}
                     <td>
-                      {product.isFeatured ? (
-                        <span className="featured-badge">Featured</span>
-                      ) : (
-                        <span className="not-featured">—</span>
-                      )}
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={Boolean(product.isFeatured)}
+                        className={`admin-toggle-badge ${
+                          product.isFeatured ? "featured" : "standard"
+                        }`}
+                        onClick={() =>
+                          handleToggleFeatured(
+                            product._id,
+                            Boolean(product.isFeatured)
+                          )
+                        }
+                        disabled={togglingFeaturedId === product._id}
+                        title={
+                          product.isFeatured
+                            ? "Featured — Click to remove from Featured"
+                            : "Standard — Click to set as Featured"
+                        }
+                      >
+                        <span className="toggle-badge-track">
+                          <span className="toggle-badge-thumb">
+                            {togglingFeaturedId === product._id ? (
+                              <Loader2 size={8} className="toggle-badge-spinner spin" />
+                            ) : product.isFeatured ? (
+                              <Star size={8} className="toggle-star-icon" />
+                            ) : null}
+                          </span>
+                        </span>
+                        <span className="toggle-badge-label">
+                          {product.isFeatured ? "Featured" : "Standard"}
+                        </span>
+                      </button>
                     </td>
 
                     {/* Actions */}

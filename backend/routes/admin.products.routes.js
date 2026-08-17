@@ -3,7 +3,7 @@ import express from "express";
 import { protect } from "../middlewares/auth.middleware.js";
 import { adminOnly, userOnly } from "../middlewares/admin.middleware.js";
 import upload from "../middlewares/upload.middleware.js";
-import { addProduct, updateProduct, getProduct, getProducts, deleteProduct } from "../controllers/admin.product.controller.js";
+import { addProduct, updateProduct, getProduct, getProducts, deleteProduct, toggleProductActive, toggleProductFeatured } from "../controllers/admin.product.controller.js";
 import { getCategories, addCategory, deleteCategory, updateCategory } from "../controllers/category.controller.js";
 
 
@@ -35,12 +35,25 @@ router.delete(
   deleteProduct
 );
 
+
 router.put(
   "/product/:productId",
   protect,
   adminOnly,
   upload.array("images", 5),
   updateProduct
+);
+router.put(
+  "/active/:productID",
+  protect,
+  adminOnly,
+  toggleProductActive
+);
+router.put(
+  "/featured/:productID",
+  protect,
+  adminOnly,
+  toggleProductFeatured
 );
 
 
