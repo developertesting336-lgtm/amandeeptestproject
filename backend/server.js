@@ -12,6 +12,7 @@ import adminProducts from './routes/admin.products.routes.js'
 import userProducts from './routes/user.products.js'
 import tagline from './routes/tagline.routes.js'
 import cartRoutes from './routes/cart.routes.js'
+import order from './routes/order.js'
 
 
 
@@ -55,6 +56,8 @@ app.use('/api', tagline)
 app.use('/api', cartRoutes)
 
 app.use('/api', userProducts)
+// app.post('api/payment/create-checkout-session',)
+app.use('/api/order', order)
 
 
 

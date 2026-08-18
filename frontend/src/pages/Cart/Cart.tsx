@@ -43,6 +43,7 @@ const Cart = () => {
     );
   }
 
+
   if (cartItems.length === 0) {
     return (
       <div className="cart-page">
@@ -193,7 +194,7 @@ const Cart = () => {
 
             <button
               className="cart-checkout-btn"
-              onClick={() => alert("Proceeding to Checkout...")}
+              onClick={() => navigate("/checkout")}
             >
               Proceed to Checkout <ArrowRight size={18} />
             </button>

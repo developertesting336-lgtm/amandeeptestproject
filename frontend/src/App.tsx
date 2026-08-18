@@ -16,6 +16,8 @@ import Users from "./pages/Admin/Users";
 import UserProducts from "./pages/Products/UserProducts";
 import ProductDetails from "./pages/Products/ProductDetails";
 import Cart from "./pages/Cart/Cart";
+import Checkout from "./pages/Checkout/Checkout";
+import UserOrders from "./pages/Orders/UserOrders";
 import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import TermsConditions from "./pages/Legal/TermsConditions";
 import ShippingPolicy from "./pages/Legal/ShippingPolicy";
@@ -43,6 +45,8 @@ function App() {
         <Route path="/products" element={<UserProducts />} />
         <Route path="/product/:productId" element={<ProductDetails />} />
         <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/order" element={<UserOrders />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />

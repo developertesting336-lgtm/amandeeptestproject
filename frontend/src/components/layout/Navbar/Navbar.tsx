@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../../context/authContext";
 import { useCart } from "../../../context/cartContext";
 import { ShoppingCart, User, Menu, X, Search } from "lucide-react";
@@ -7,21 +7,12 @@ import "./Navbar.css";
 import logo from "../../../assets/logo.png";
 
 const Navbar = () => {
+  const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const { totalItems } = useCart();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
-  const closeMenu = () => {
-    setMenuOpen(false);
-  };
-
-  const handleLogout = () => {
-    logout();
-    closeMenu();
-    navigate("/login");
-  };
 
   // Live search triggering navigate on searchQuery change
   useEffect(() => {
@@ -34,6 +25,20 @@ const Navbar = () => {
       }
     }
   }, [searchQuery]);
+
+  const closeMenu = () => {
+    setMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+    closeMenu();
+    navigate("/login");
+  };
+
+  if (location.pathname === "/checkout") {
+    return null;
+  }
 
   return (
     <header className="navbar">

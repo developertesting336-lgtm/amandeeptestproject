@@ -236,7 +236,7 @@ const ProductDetails = () => {
   const handleBuyNow = async () => {
     if (product?._id) {
       await addToCart(product._id, quantity);
-      navigate("/cart");
+      navigate("/checkout");
     }
   };
 
@@ -338,26 +338,26 @@ const ProductDetails = () => {
     typeof product.category === "object" && product.category !== null
       ? product.category.name
       : typeof product.category === "string"
-      ? product.category
-      : "";
+        ? product.category
+        : "";
 
   const subcategoryName: string =
     typeof product.subcategory === "object" && product.subcategory !== null
       ? product.subcategory.name
       : typeof product.subcategory === "string"
-      ? product.subcategory
-      : "";
+        ? product.subcategory
+        : "";
 
   // Dynamic Highlights List
   const highlightsList =
     Array.isArray(product.highlights) && product.highlights.length > 0
       ? product.highlights
       : [
-          product.short_description || "High-performance build and engineered for premium durability",
-          "Advanced high-definition display with vivid color reproduction",
-          "Engineered for energy efficiency and seamless user experience",
-          "Complete manufacturer support with standard accessories included",
-        ];
+        product.short_description || "High-performance build and engineered for premium durability",
+        "Advanced high-definition display with vivid color reproduction",
+        "Engineered for energy efficiency and seamless user experience",
+        "Complete manufacturer support with standard accessories included",
+      ];
 
   // Specs extraction helpers
   const screenSizeVal =
@@ -372,25 +372,25 @@ const ProductDetails = () => {
     product.attributes?.weight?.value !== undefined && product.attributes?.weight?.value !== null
       ? `${product.attributes.weight.value} ${product.attributes.weight.unit || "kg"}`
       : product.attributes?.weightValue
-      ? `${product.attributes.weightValue} ${product.attributes.weightUnit || "kg"}`
-      : "14.2 kg";
+        ? `${product.attributes.weightValue} ${product.attributes.weightUnit || "kg"}`
+        : "14.2 kg";
 
   const dimVal =
     product.attributes?.dimensions?.length ||
-    product.attributes?.dimensions?.width ||
-    product.attributes?.dimensions?.height
+      product.attributes?.dimensions?.width ||
+      product.attributes?.dimensions?.height
       ? `${[
-          product.attributes.dimensions.length,
-          product.attributes.dimensions.width,
-          product.attributes.dimensions.height,
-        ]
-          .filter(Boolean)
-          .join(" x ")} ${product.attributes.dimensions.unit || "cm"}`
+        product.attributes.dimensions.length,
+        product.attributes.dimensions.width,
+        product.attributes.dimensions.height,
+      ]
+        .filter(Boolean)
+        .join(" x ")} ${product.attributes.dimensions.unit || "cm"}`
       : product.attributes?.length || product.attributes?.width || product.attributes?.height
-      ? `${[product.attributes.length, product.attributes.width, product.attributes.height]
+        ? `${[product.attributes.length, product.attributes.width, product.attributes.height]
           .filter(Boolean)
           .join(" x ")} ${product.attributes.dimUnit || "cm"}`
-      : "123 x 25 x 78 cm";
+        : "123 x 25 x 78 cm";
 
   const manufacturerVal =
     product.manufacturer?.name || "Samsung Electronics (South Korea)";
