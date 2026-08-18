@@ -40,6 +40,7 @@ export interface OrderItemProduct {
   name?: string;
   price?: number;
   salePrice?: number | null;
+  salesPrice?: number | null;
   images?: Array<string | { url?: string }>;
   image?: string;
   category?: any;
@@ -52,8 +53,8 @@ export interface UserOrderItem {
   product?: OrderItemProduct | string;
   name?: string;
   productName?: string;
-  price: number;
-  quantity: number;
+  price?: number;
+  quantity?: number;
   image?: string;
 }
 
@@ -78,6 +79,7 @@ export interface UserOrder {
   user?: string | any;
   items?: UserOrderItem[];
   products?: UserOrderItem[];
+  orderTotal?: number;
   totalAmount?: number;
   amount?: number;
   paymentMode?: string;

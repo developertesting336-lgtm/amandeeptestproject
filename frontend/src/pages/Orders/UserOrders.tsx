@@ -219,7 +219,12 @@ const UserOrders: React.FC = () => {
                           (productObj?.images && productObj.images[0]) ||
                           productObj?.image;
 
-                        const unitPrice = item.price || productObj?.salesPrice || 0;
+                        const unitPrice =
+                          item.price ||
+                          productObj?.price ||
+                          productObj?.salePrice ||
+                          productObj?.salesPrice ||
+                          0;
                         const quantity = item.quantity || 1;
                         const itemTotal = unitPrice * quantity;
 
