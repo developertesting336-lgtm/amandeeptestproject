@@ -35,6 +35,12 @@ const orderSchema = new mongoose.Schema(
                     required: true,
                     min: 1,
                 },
+
+                purchasePrice: {
+                    type: Number,
+                    required: true,
+                    min: 0,
+                }
             },
         ],
 

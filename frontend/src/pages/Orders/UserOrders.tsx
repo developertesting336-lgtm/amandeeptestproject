@@ -28,7 +28,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000
 
 const formatImageUrl = (image?: any): string => {
   if (!image) return productFallback;
-  const rawUrl = typeof image === "string" ? image : image?.url;
+  const rawUrl =
+    typeof image === "string"
+      ? image
+      : image?.url || (Array.isArray(image) && image[0]?.url) || (Array.isArray(image) && typeof image[0] === "string" ? image[0] : null);
+
   if (!rawUrl || typeof rawUrl !== "string") return productFallback;
   if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
     return rawUrl;
@@ -55,14 +59,16 @@ const formatDate = (dateString?: string): string => {
 
 const formatCurrency = (amount?: number): string => {
   if (typeof amount !== "number" || isNaN(amount)) return "₹0.00";
-  return `₹${amount.toLocaleString("en-IN", {
+  return `Purchase Price: ₹${amount.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 };
 
-const getStatusBadge = (status?: string) => {
-  const normalized = (status || "Pending").toLowerCase();
+const getStatusBadge = (status?: string, paymentStatus?: string) => {
+  const normalized = (status || "").toLowerCase();
+  const payNorm = (paymentStatus || "").toLowerCase();
+
   if (normalized.includes("deliver")) {
     return {
       label: "Delivered",
@@ -91,8 +97,15 @@ const getStatusBadge = (status?: string) => {
       icon: <XCircle size={13} />,
     };
   }
+  if (payNorm === "paid") {
+    return {
+      label: "Confirmed",
+      className: "status-badge-processing",
+      icon: <CheckCircle2 size={13} />,
+    };
+  }
   return {
-    label: "Placed",
+    label: "Order Placed",
     className: "status-badge-pending",
     icon: <Clock size={13} />,
   };
@@ -133,7 +146,9 @@ const UserOrders: React.FC = () => {
         <div className="orders-compact-header">
           <h1 className="orders-compact-title">Your Orders</h1>
           {!loading && !error && orders.length > 0 && (
-            <span className="orders-count-badge">{orders.length} {orders.length === 1 ? "Order" : "Orders"}</span>
+            <span className="orders-count-badge">
+              {orders.length} {orders.length === 1 ? "Order" : "Orders"}
+            </span>
           )}
         </div>
 
@@ -167,18 +182,40 @@ const UserOrders: React.FC = () => {
           <div className="orders-compact-stack">
             {orders.map((order) => {
               const orderId = order.orderId || order._id;
-              const items: UserOrderItem[] = order.items || order.products || [];
-              const statusInfo = getStatusBadge(order.orderStatus || order.status);
-              const address = order.address || order.shippingAddress;
+              const productsList: UserOrderItem[] = order.products || order.items || [];
+              const statusInfo = getStatusBadge(order.orderStatus || order.status, order.paymentStatus);
+              const address = order.shippingAddress || order.address;
               const paymentMode = (order.paymentMode || order.paymentMethod || "COD").toUpperCase();
-              const totalAmount = order.orderTotal ?? order.amount ?? 0;
+
+              // Items total, delivery charges, and final order total
+              const itemsTotal =
+                typeof order.itemsTotal === "number"
+                  ? order.itemsTotal
+                  : productsList.reduce((sum, item) => {
+                    const price =
+                      item.purchasePrice ??
+                      item.price ??
+                      (typeof item.productId === "object" ? item.productId?.price : 0) ??
+                      0;
+                    return sum + price * (item.quantity || 1);
+                  }, 0);
+
+              const deliveryCharges = typeof order.deliveryCharges === "number" ? order.deliveryCharges : 0;
+              const orderTotal =
+                typeof order.orderTotal === "number"
+                  ? order.orderTotal
+                  : typeof order.totalAmount === "number"
+                    ? order.totalAmount
+                    : typeof order.amount === "number"
+                      ? order.amount
+                      : itemsTotal + deliveryCharges;
 
               return (
                 <div key={order._id} className="compact-order-card">
                   {/* Card Header */}
                   <div className="compact-card-top">
                     <div className="card-top-left">
-                      <span className="order-id-txt">#{orderId.slice(-8).toUpperCase()}</span>
+                      <span className="order-id-txt">#{orderId}</span>
                       <span className="sep">•</span>
                       <span className="order-date-txt">
                         <Calendar size={12} />
@@ -196,42 +233,52 @@ const UserOrders: React.FC = () => {
 
                   {/* Products Section */}
                   <div className="compact-products-box">
-                    {items.length === 0 ? (
+                    {productsList.length === 0 ? (
                       <p className="compact-empty-txt">No items details available.</p>
                     ) : (
-                      items.map((item, idx) => {
+                      productsList.map((item, idx) => {
                         const productObj =
-                          typeof item.product === "object"
-                            ? item.product
-                            : typeof item.productId === "object"
-                              ? item.productId
+                          typeof item.productId === "object"
+                            ? item.productId
+                            : typeof item.product === "object"
+                              ? item.product
                               : null;
 
                         const prodId =
-                          (typeof item.productId === "string" ? item.productId : productObj?._id) ||
-                          (typeof item.product === "string" ? item.product : undefined);
+                          typeof item.productId === "string"
+                            ? item.productId
+                            : productObj?._id || (typeof item.product === "string" ? item.product : undefined);
 
                         const prodName =
-                          item.name || item.productName || productObj?.name || "Product";
+                          item.name || item.productName || productObj?.name || `Product Item #${idx + 1}`;
 
-                        const prodImg =
+                        // Extract image from item.images array, item.image, or productObj
+                        const firstImageObj =
+                          (Array.isArray(item.images) && item.images.length > 0 && item.images[0]) ||
                           item.image ||
                           (productObj?.images && productObj.images[0]) ||
                           productObj?.image;
 
+                        const prodImgUrl =
+                          typeof firstImageObj === "string"
+                            ? firstImageObj
+                            : firstImageObj?.url || "";
+
                         const unitPrice =
-                          item.price ||
-                          productObj?.price ||
-                          productObj?.salePrice ||
-                          productObj?.salesPrice ||
-                          0;
+                          item.purchasePrice ??
+                          item.price ??
+                          productObj?.price ??
+                          productObj?.salePrice ??
+                          productObj?.salesPrice ??
+                          (itemsTotal && item.quantity ? itemsTotal / item.quantity : 0);
+
                         const quantity = item.quantity || 1;
-                        const itemTotal = unitPrice * quantity;
+                        const itemSubtotal = unitPrice * quantity;
 
                         return (
                           <div key={item._id || idx} className="compact-item-row">
                             <img
-                              src={formatImageUrl(prodImg)}
+                              src={formatImageUrl(prodImgUrl)}
                               alt={prodName}
                               className="compact-item-thumb"
                               onError={(e) => {
@@ -241,22 +288,23 @@ const UserOrders: React.FC = () => {
 
                             <div className="compact-item-info">
                               <h4 className="compact-item-title">{prodName}</h4>
-                              <span className="compact-item-pricing">
-                                {formatCurrency(unitPrice)} × {quantity}
-                              </span>
+                              <div className="compact-item-pricing">
+                                <span>{formatCurrency(unitPrice)} × {quantity}</span>
+                                <span className="dot-sep">•</span>
+                                <span className="item-subtotal-val">{formatCurrency(itemSubtotal)}</span>
+                              </div>
                             </div>
 
-                            <div className="compact-item-right">
-                              <span className="compact-item-total">{formatCurrency(itemTotal)}</span>
-                              {prodId && (
+                            {prodId && (
+                              <div className="compact-item-right">
                                 <Link
                                   to={`/product/${prodId}`}
                                   className="compact-view-link"
                                 >
                                   View
                                 </Link>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
                         );
                       })
@@ -265,7 +313,7 @@ const UserOrders: React.FC = () => {
 
                   {/* Compact Bottom Details */}
                   <div className="compact-details-footer">
-                    {/* Address Block */}
+                    {/* Shipping Address Block */}
                     <div className="compact-footer-col">
                       <span className="footer-col-title">
                         <MapPin size={12} /> Shipping Address
@@ -274,12 +322,14 @@ const UserOrders: React.FC = () => {
                         <div className="compact-address-info">
                           <div className="compact-person">
                             <UserIcon size={12} />
-                            <strong>{address.fullName || address.name || user?.name || "Customer"}</strong>
+                            <strong>{address.fullname || address.fullName || address.name || user?.name || "Customer"}</strong>
                             {address.tag && <span className="compact-tag">{address.tag}</span>}
                           </div>
                           <p className="compact-addr-line">
-                            {address.addressLine || address.street || address.address || ""},{" "}
-                            {[address.city, address.state, address.pincode || address.zipCode]
+                            {address.address || address.addressLine || address.street || ""}
+                          </p>
+                          <p className="compact-addr-line compact-addr-muted">
+                            {[address.city, address.state, address.postalCode || address.pincode, address.country]
                               .filter(Boolean)
                               .join(", ")}
                           </p>
@@ -294,28 +344,40 @@ const UserOrders: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Payment & Total */}
+                    {/* Payment & Order Summary with Delivery Charges */}
                     <div className="compact-footer-col">
                       <span className="footer-col-title">
-                        {paymentMode === "COD" ? <Banknote size={12} /> : <CreditCard size={12} />} Payment Details
+                        {paymentMode === "COD" ? <Banknote size={12} /> : <CreditCard size={12} />} Payment & Summary
                       </span>
                       <div className="compact-payment-info">
                         <div className="compact-pay-row">
-                          <span>Method:</span>
-                          <strong>{paymentMode === "COD" ? "Cash on Delivery" : "Online"}</strong>
+                          <span className="pay-label">Payment Mode:</span>
+                          <strong className="pay-val">{paymentMode === "COD" ? "Cash on Delivery" : "Online Payment"}</strong>
                         </div>
                         <div className="compact-pay-row">
-                          <span>Status:</span>
+                          <span className="pay-label">Payment Status:</span>
                           <span
                             className={`compact-pay-status ${(order.paymentStatus || "").toLowerCase() === "paid" ? "paid" : "pending"
                               }`}
                           >
-                            {order.paymentStatus || (paymentMode === "COD" ? "Pay on Delivery" : "Paid")}
+                            {(order.paymentStatus || (paymentMode === "COD" ? "Pay on Delivery" : "Pending")).toUpperCase()}
                           </span>
                         </div>
+                        <div className="compact-pay-row subtotal-row">
+                          <span className="pay-label">Items Total:</span>
+                          <span>{formatCurrency(itemsTotal)}</span>
+                        </div>
+                        <div className="compact-pay-row delivery-row">
+                          <span className="pay-label">Delivery Charges:</span>
+                          {deliveryCharges === 0 ? (
+                            <span className="free-delivery-badge">FREE</span>
+                          ) : (
+                            <span className="delivery-val">+{formatCurrency(deliveryCharges)}</span>
+                          )}
+                        </div>
                         <div className="compact-pay-total-row">
-                          <span>Total:</span>
-                          <strong className="compact-grand-total">{formatCurrency(totalAmount)}</strong>
+                          <span>Order Total:</span>
+                          <strong className="compact-grand-total">{formatCurrency(orderTotal)}</strong>
                         </div>
                       </div>
                     </div>

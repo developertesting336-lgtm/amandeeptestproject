@@ -35,13 +35,21 @@ export interface PlaceCodOrderResponse {
   error?: string;
 }
 
+export interface OrderProductImage {
+  _id?: string;
+  url: string;
+  public_id?: string;
+  alt?: string;
+  isPrimary?: boolean;
+}
+
 export interface OrderItemProduct {
   _id?: string;
   name?: string;
   price?: number;
   salePrice?: number | null;
   salesPrice?: number | null;
-  images?: Array<string | { url?: string }>;
+  images?: Array<OrderProductImage | string | { url?: string }>;
   image?: string;
   category?: any;
   brand?: string;
@@ -53,48 +61,57 @@ export interface UserOrderItem {
   product?: OrderItemProduct | string;
   name?: string;
   productName?: string;
+  purchasePrice?: number;
   price?: number;
-  quantity?: number;
+  quantity: number;
+  images?: Array<OrderProductImage | string | { url?: string }>;
   image?: string;
 }
 
 export interface UserOrderAddress {
+  fullname?: string;
   fullName?: string;
   name?: string;
   phone?: string;
+  address?: string;
   addressLine?: string;
   street?: string;
-  address?: string;
   city?: string;
   state?: string;
+  postalCode?: string;
   pincode?: string;
   zipCode?: string;
+  country?: string;
   tag?: string;
 }
 
 export interface UserOrder {
   _id: string;
   orderId?: string;
-  userId?: string | any;
   user?: string | any;
-  items?: UserOrderItem[];
+  userId?: string | any;
   products?: UserOrderItem[];
+  items?: UserOrderItem[];
+  itemsTotal?: number;
+  deliveryCharges?: number;
   orderTotal?: number;
   totalAmount?: number;
   amount?: number;
+  shippingAddress?: UserOrderAddress;
+  address?: UserOrderAddress;
   paymentMode?: string;
   paymentMethod?: string;
-  paymentStatus?: "Paid" | "Pending" | "Failed" | string;
+  paymentStatus?: "paid" | "pending" | "failed" | string;
   orderStatus?: "Pending" | "Processing" | "Confirmed" | "Shipped" | "Delivered" | "Cancelled" | string;
   status?: string;
-  address?: UserOrderAddress;
-  shippingAddress?: UserOrderAddress;
   createdAt?: string;
   updatedAt?: string;
+  __v?: number;
 }
 
 export interface GetOrdersResponse {
   success: boolean;
+  count?: number;
   orders: UserOrder[];
   message?: string;
   error?: string;

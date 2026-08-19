@@ -9,10 +9,10 @@ export const cod = async (req, res) => {
 
 
 
-        console.log("userID", req.user._id)
-        console.log('produsts', products)
-        console.log('address', address.fullName)
-        console.log('paymentmode', paymentMode)
+        // console.log("userID", req.user._id)
+        // console.log('produsts', products)
+        // console.log('address', address.fullName)
+        // console.log('paymentmode', paymentMode)
 
         if (paymentMode !== "COD") {
             return res.status(400).json({
@@ -47,15 +47,20 @@ export const cod = async (req, res) => {
 
 
         let itemsTotal = 0;
+        let purchasePrice = 0
 
         const orderProducts = products.map((item) => {
             const product = dbProducts.find(
                 (p) => p._id.toString() === item.productId
             );
 
+
+
             const quantity = Number(item.quantity);
 
             const price = product.salePrice ?? product.price;
+
+            purchasePrice = price
 
             const itemTotal = price * quantity;
 
@@ -63,14 +68,33 @@ export const cod = async (req, res) => {
 
             return {
                 productId: product._id,
+                purchasePrice,
                 quantity,
             };
         });
 
+        // console.log("purchasePrice", purchasePrice)
+        // console.log("itemsTotal", itemsTotal)
 
-        const deliveryCharges = 0;
+        let deliveryCharges = 0
+
+        if (itemsTotal < 499) {
+
+            deliveryCharges = 99;
+        }
+
+        // console.log("deliveryCharges", deliveryCharges)
+
+
+
+
+
 
         const orderTotal = itemsTotal + deliveryCharges;
+
+        // console.log("orderTotal", orderTotal)
+
+        // console.log(Date.now())
 
 
         const order = await Order.create({
@@ -112,6 +136,8 @@ export const cod = async (req, res) => {
             }
         );
 
+        console.log(order)
+
         return res.status(201).json({
             success: true,
             message: "COD order created successfully",
@@ -133,12 +159,14 @@ export const getUserOrders = async (req, res) => {
         const userId = req.user._id;
 
         const orders = await Order.aggregate([
+            // 1. Get orders for the user
             {
                 $match: {
                     user: new mongoose.Types.ObjectId(userId),
                 },
             },
 
+            // 2. Get product details
             {
                 $lookup: {
                     from: "products",
@@ -148,6 +176,7 @@ export const getUserOrders = async (req, res) => {
                 },
             },
 
+            // 3. Combine order product data with current product data
             {
                 $addFields: {
                     products: {
@@ -157,24 +186,63 @@ export const getUserOrders = async (req, res) => {
 
                             in: {
                                 productId: "$$orderProduct.productId",
-                                quantity: "$$orderProduct.quantity",
 
-                                product: {
-                                    $arrayElemAt: [
-                                        {
-                                            $filter: {
-                                                input: "$productDetails",
-                                                as: "product",
-                                                cond: {
-                                                    $eq: [
-                                                        "$$product._id",
-                                                        "$$orderProduct.productId",
-                                                    ],
-                                                },
+                                // From Order
+                                quantity: "$$orderProduct.quantity",
+                                purchasePrice: "$$orderProduct.purchasePrice",
+                                itemTotal: "$$orderProduct.itemTotal",
+
+                                // From Product collection
+                                name: {
+                                    $let: {
+                                        vars: {
+                                            product: {
+                                                $arrayElemAt: [
+                                                    {
+                                                        $filter: {
+                                                            input: "$productDetails",
+                                                            as: "product",
+                                                            cond: {
+                                                                $eq: [
+                                                                    "$$product._id",
+                                                                    "$$orderProduct.productId",
+                                                                ],
+                                                            },
+                                                        },
+                                                    },
+                                                    0,
+                                                ],
                                             },
                                         },
-                                        0,
-                                    ],
+
+                                        in: "$$product.name",
+                                    },
+                                },
+
+                                images: {
+                                    $let: {
+                                        vars: {
+                                            product: {
+                                                $arrayElemAt: [
+                                                    {
+                                                        $filter: {
+                                                            input: "$productDetails",
+                                                            as: "product",
+                                                            cond: {
+                                                                $eq: [
+                                                                    "$$product._id",
+                                                                    "$$orderProduct.productId",
+                                                                ],
+                                                            },
+                                                        },
+                                                    },
+                                                    0,
+                                                ],
+                                            },
+                                        },
+
+                                        in: "$$product.images",
+                                    },
                                 },
                             },
                         },
@@ -182,18 +250,22 @@ export const getUserOrders = async (req, res) => {
                 },
             },
 
+            // 4. Remove temporary productDetails
             {
                 $project: {
                     productDetails: 0,
                 },
             },
 
+            // 5. Latest orders first
             {
                 $sort: {
                     createdAt: -1,
                 },
             },
         ]);
+
+        // console.log(orders[1].products)
 
         return res.status(200).json({
             success: true,
