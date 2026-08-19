@@ -13,6 +13,8 @@ import userProducts from './routes/user.products.js'
 import tagline from './routes/tagline.routes.js'
 import cartRoutes from './routes/cart.routes.js'
 import order from './routes/order.js'
+import stripe from './config/stripe.js'
+import { stripeWebhook } from './controllers/order.js'
 
 
 
@@ -26,6 +28,14 @@ dotenv.config();
 const app = express();
 
 
+
+
+
+app.post(
+  "/api/order/webhook",
+  express.raw({ type: "application/json" }),
+  stripeWebhook
+);
 
 
 

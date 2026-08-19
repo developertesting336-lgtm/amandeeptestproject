@@ -59,7 +59,7 @@ const formatDate = (dateString?: string): string => {
 
 const formatCurrency = (amount?: number): string => {
   if (typeof amount !== "number" || isNaN(amount)) return "₹0.00";
-  return `Purchase Price: ₹${amount.toLocaleString("en-IN", {
+  return `₹ ${amount.toLocaleString("en-IN", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
@@ -289,9 +289,9 @@ const UserOrders: React.FC = () => {
                             <div className="compact-item-info">
                               <h4 className="compact-item-title">{prodName}</h4>
                               <div className="compact-item-pricing">
-                                <span>{formatCurrency(unitPrice)} × {quantity}</span>
+                                <span>Purchase Price: {formatCurrency(unitPrice)} × {quantity}</span>
                                 <span className="dot-sep">•</span>
-                                <span className="item-subtotal-val">{formatCurrency(itemSubtotal)}</span>
+                                <span className="item-subtotal-val"> Total: {formatCurrency(itemSubtotal)}</span>
                               </div>
                             </div>
 
@@ -372,7 +372,7 @@ const UserOrders: React.FC = () => {
                           {deliveryCharges === 0 ? (
                             <span className="free-delivery-badge">FREE</span>
                           ) : (
-                            <span className="delivery-val">+{formatCurrency(deliveryCharges)}</span>
+                            <span className="delivery-val">+ {formatCurrency(deliveryCharges)}</span>
                           )}
                         </div>
                         <div className="compact-pay-total-row">

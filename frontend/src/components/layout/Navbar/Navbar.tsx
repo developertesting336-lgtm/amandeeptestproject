@@ -230,7 +230,7 @@ const Navbar = () => {
                     </Link>
 
                     <Link
-                      to="/products"
+                      to="/wishlist"
                       className="dropdown-item"
                       onClick={closeMenu}
                     >
