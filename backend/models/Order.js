@@ -116,9 +116,34 @@ const orderSchema = new mongoose.Schema(
 
         paymentMode: {
             type: String,
-            enum: ["card", "upi", "cod"],
+            enum: ["online", "cod"],
             required: true,
         },
+
+        orderStatus: {
+            type: String,
+            enum: [
+                "pending",
+                "confirmed",
+                "processing",
+                "shipped",
+                "delivered",
+                "cancelled",
+            ],
+            default: "confirmed",
+        },
+
+        cancellationReason: {
+            type: String,
+            trim: true,
+            default: null,
+        },
+
+        cancelledAt: {
+            type: Date,
+            default: null,
+        },
+
 
         stripeCheckoutSessionId: {
             type: String,
@@ -127,6 +152,15 @@ const orderSchema = new mongoose.Schema(
 
         stripePaymentIntentId: {
             type: String,
+            default: null,
+        },
+        refundId: {
+            type: String,
+            default: null,
+        },
+
+        refundedAt: {
+            type: Date,
             default: null,
         },
     },

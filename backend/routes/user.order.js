@@ -5,7 +5,7 @@ import { userOnly } from "../middlewares/admin.middleware.js";
 import upload from "../middlewares/upload.middleware.js";
 import { addProduct, updateProduct, getProduct, getProducts, deleteProduct, toggleProductActive, toggleProductFeatured } from "../controllers/admin.product.controller.js";
 import { getCategories, addCategory, deleteCategory, updateCategory } from "../controllers/category.controller.js";
-import { cod, getUserOrders, stripePayments } from '../controllers/order.js'
+import { cod, getUserOrders, stripePayments, cancelOrderForUser } from '../controllers/user.order.js'
 
 
 const router = express.Router();
@@ -34,6 +34,14 @@ router.get(
     userOnly,
     getUserOrders
 )
+
+router.patch(
+    "/cancel/:orderId",
+    protect,
+    userOnly,
+    cancelOrderForUser
+)
+
 // router.get(
 //   "/product/:productId",
 //   // protect,

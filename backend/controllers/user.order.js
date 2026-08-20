@@ -462,7 +462,7 @@ export const stripePayments = async (req, res) => {
             },
 
             paymentStatus: "pending",
-            paymentMode: "cod",
+            paymentMode: "online",
             stripeCheckoutSessionId: null,
 
             stripePaymentIntentId: null,
@@ -567,9 +567,9 @@ export const stripePayments = async (req, res) => {
         // UPDATE ORDER
         // =========================
 
-        // order.stripeCheckoutSessionId = session.id;
+        order.stripeCheckoutSessionId = session.id;
 
-        // await order.save();
+        await order.save();
 
         // return res.json({ "orderProdcuts": orderProducts, "lineItems": lineItems })
 
@@ -758,6 +758,173 @@ export const stripeWebhook = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Webhook processing failed"
+        });
+    }
+};
+
+export const cancelOrderForUser = async (req, res) => {
+    try {
+        const { orderId } = req.params;
+        console.log(orderId)
+        const { reason } = req.body;
+
+        if (!reason || !reason.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Cancellation reason is required",
+            });
+        }
+
+        // Find only the user's own order
+        const order = await Order.findOne({
+            orderId,
+            user: req.user._id,
+        });
+
+        if (!order) {
+            return res.status(404).json({
+                success: false,
+                message: "Order not found",
+            });
+        }
+
+        // Already cancelled
+        if (order.orderStatus === "cancelled") {
+            return res.status(400).json({
+                success: false,
+                message: "Order is already cancelled",
+            });
+        }
+
+        // Cannot cancel delivered order
+        if (order.orderStatus === "delivered") {
+            return res.status(400).json({
+                success: false,
+                message: "Delivered order cannot be cancelled",
+            });
+        }
+
+        // Cannot cancel shipped order
+        if (order.orderStatus === "shipped") {
+            return res.status(400).json({
+                success: false,
+                message: "Shipped order cannot be cancelled",
+            });
+        }
+
+        if (order.paymentMode === "cod") {
+
+            order.orderStatus = "cancelled";
+            order.cancellationReason = reason.trim();
+            order.cancelledAt = new Date();
+
+            await order.save();
+
+            return res.status(200).json({
+                success: true,
+                message: "COD order cancelled successfully",
+                order,
+            });
+        }
+
+
+        // ==========================================
+        // STRIPE PAID ORDER
+        // ==========================================
+
+        if (
+            order.paymentMode === "online" &&
+            order.paymentStatus === "paid"
+        ) {
+
+            if (!order.stripePaymentIntentId) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Stripe payment information not found",
+                });
+            }
+
+            // Create Stripe refund
+            // const refund = await stripe.refunds.create({
+            //     payment_intent: order.stripePaymentIntentId,
+            // });
+
+            // console.log("refund", refund)
+
+            order.orderStatus = "cancelled";
+            // order.paymentStatus = "refunded";
+            // order.refundId = refund.id;
+            // order.refundedAt = new Date();
+
+            order.cancellationReason = reason.trim();
+            order.cancelledAt = new Date();
+
+            await order.save();
+
+            return res.status(200).json({
+                success: true,
+                message: "Order cancelled and refund initiated successfully",
+                order,
+            });
+        }
+
+
+        // ==========================================
+        // COD ORDER
+        // ==========================================
+
+
+        // ==========================================
+        // STRIPE PAYMENT STILL PENDING
+        // ==========================================
+
+        if (
+            order.paymentMode === "online" &&
+            order.paymentStatus === "pending"
+        ) {
+
+            order.orderStatus = "cancelled";
+
+            await order.save();
+
+            return res.status(200).json({
+                success: true,
+                message: "Pending order cancelled successfully",
+                order,
+            });
+        }
+
+
+        // ==========================================
+        // PAYMENT FAILED
+        // ==========================================
+
+        if (order.paymentStatus === "failed") {
+
+            order.orderStatus = "cancelled";
+
+            await order.save();
+
+            return res.status(200).json({
+                success: true,
+                message: "Order cancelled successfully",
+                order,
+            });
+        }
+
+
+        return res.status(400).json({
+            success: false,
+            message: "This order cannot be cancelled",
+        });
+
+    } catch (error) {
+
+        console.error("Cancel order error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to cancel order",
         });
     }
 };
