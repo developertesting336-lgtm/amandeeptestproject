@@ -32,7 +32,12 @@ import {
   type AddressFormErrors,
   DEFAULT_SAMPLE_ADDRESSES,
 } from "../../services/addressService";
-import { placeCodOrder, type PlaceCodOrderPayload } from "../../services/orderService";
+import {
+  placeCodOrder,
+  placestripeOrder,
+  type PlaceCodOrderPayload,
+  type PlaceStripeOrderPayload,
+} from "../../services/orderService";
 import product1 from "../../assets/1.jpeg";
 import logo from "../../assets/logo.png";
 import Footer from "../Home/footersection";
@@ -290,13 +295,67 @@ const Checkout: React.FC = () => {
     setIsPlacingOrder(true);
 
     if (paymentMethod === "ONLINE") {
-      // Online payment via Stripe
-      setTimeout(() => {
+      // Online payment via Stripe Checkout Session
+      try {
+        const payload: PlaceStripeOrderPayload = {
+          products: safeItems.map((item) => ({
+            productId: item.product._id,
+            quantity: item.quantity,
+            price: item.price || item.product.price,
+            purchasePrice: item.price || item.product.price,
+          })),
+          items: safeItems.map((item) => ({
+            productId: item.product._id,
+            quantity: item.quantity,
+            price: item.price || item.product.price,
+          })),
+          paymentMode: "ONLINE",
+          address: {
+            fullName: selectedAddress.fullName,
+            phone: selectedAddress.phone,
+            addressLine: selectedAddress.addressLine,
+            city: selectedAddress.city,
+            state: selectedAddress.state,
+            pincode: selectedAddress.pincode,
+            tag: selectedAddress.tag,
+          },
+          shippingAddress: {
+            fullname: selectedAddress.fullName,
+            fullName: selectedAddress.fullName,
+            phone: selectedAddress.phone,
+            address: selectedAddress.addressLine,
+            addressLine: selectedAddress.addressLine,
+            city: selectedAddress.city,
+            state: selectedAddress.state,
+            postalCode: selectedAddress.pincode,
+            pincode: selectedAddress.pincode,
+            country: "India",
+            tag: selectedAddress.tag,
+          },
+          itemsTotal: safeSubtotal,
+          deliveryCharges: deliveryCharge,
+          totalAmount: totalPayable,
+          orderTotal: totalPayable,
+        };
+
+        const res = await placestripeOrder(payload, token);
+
+        if (res.success && res.url) {
+          // Clear cart or prepare before redirect
+          if (fetchCart) {
+            fetchCart().catch(() => {});
+          }
+          // Redirect to Stripe Checkout Session
+          window.location.href = res.url;
+        } else {
+          alert(res.error || "Failed to create Stripe payment checkout session. Please try again.");
+          setIsPlacingOrder(false);
+        }
+      } catch (err: any) {
+        console.error("Stripe payment error:", err);
+        alert(err.message || "An unexpected error occurred while initiating payment.");
         setIsPlacingOrder(false);
-        alert(
-          `Redirecting to Stripe Payment Gateway for ₹${totalPayable.toLocaleString("en-IN")}...\n\n(Note: Stripe will handle Card, UPI, Net Banking & Wallets directly)`
-        );
-      }, 800);
+      }
     } else {
       // Cash on Delivery - call /api/order/cod
       try {

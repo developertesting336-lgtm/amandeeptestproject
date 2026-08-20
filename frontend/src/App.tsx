@@ -18,6 +18,8 @@ import ProductDetails from "./pages/Products/ProductDetails";
 import Cart from "./pages/Cart/Cart";
 import Checkout from "./pages/Checkout/Checkout";
 import UserOrders from "./pages/Orders/UserOrders";
+import PaymentSuccess from "./pages/Payment/PaymentSuccess";
+import PaymentCancelled from "./pages/Payment/PaymentCancelled";
 import Wishlist from "./pages/Wishlist/Wishlist";
 import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import TermsConditions from "./pages/Legal/TermsConditions";
@@ -48,6 +50,8 @@ function App() {
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/order" element={<UserOrders />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/payment-cancelled" element={<PaymentCancelled />} />
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
