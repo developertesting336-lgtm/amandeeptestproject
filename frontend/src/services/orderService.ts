@@ -1,6 +1,3 @@
-// Order Service for Checkout and Order Management
-// Handles COD order creation and communicates with /api/order/cod
-
 export interface PlaceCodOrderPayload {
   userId?: string;
   productId?: string;
@@ -14,7 +11,7 @@ export interface PlaceCodOrderPayload {
     quantity: number;
     price?: number;
   }>;
-  paymentMode: string; // "COD"
+  paymentMode: string;
   address: {
     fullName: string;
     phone: string;
@@ -490,7 +487,7 @@ export const getAdminOrders = async (token?: string | null): Promise<GetOrdersRe
  */
 export const updateAdminOrderStatus = async (
   orderId: string,
-  updates: { orderStatus?: string; status?: string; paymentStatus?: string; [key: string]: any },
+  updates: { orderStatus?: string; status?: string; paymentStatus?: string;[key: string]: any },
   token?: string | null
 ): Promise<{ success: boolean; message?: string; error?: string }> => {
   try {
