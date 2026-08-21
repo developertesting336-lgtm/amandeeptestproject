@@ -24,6 +24,7 @@ import Wishlist from "./pages/Wishlist/Wishlist";
 import PrivacyPolicy from "./pages/Legal/PrivacyPolicy";
 import TermsConditions from "./pages/Legal/TermsConditions";
 import ShippingPolicy from "./pages/Legal/ShippingPolicy";
+import OAuthSuccess from "./pages/Auth/OAuthSuccess";
 
 // ScrollToTop component to reset scroll position on route change
 const ScrollToTop = () => {
@@ -55,6 +56,7 @@ function App() {
         <Route path="/wishlist" element={<Wishlist />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/oauth-success" element={<OAuthSuccess />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsConditions />} />
         <Route path="/shipping-policy" element={<ShippingPolicy />} />

@@ -16,6 +16,7 @@ import order from './routes/user.order.js'
 // import stripe from './config/stripe.js'
 import { stripeWebhook } from './controllers/user.order.js'
 import adminOrderRoutes from './routes/admin.order.js'
+import googleAuth from './routes/oauth.js'
 
 
 
@@ -60,7 +61,10 @@ app.listen(PORT, () => {
 app.get('/status', (req, res) => {
   res.send("working")
 })
+
+
 app.use('/api/auth', authRoutes)
+app.use('/api/auth/google', googleAuth)
 app.use('/api/dashboard', dashboard)
 app.use('/api/admin', adminProducts)
 app.use('/api', tagline)
