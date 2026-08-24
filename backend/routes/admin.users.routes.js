@@ -10,7 +10,7 @@ const router = express.Router();
 // =====================================================
 
 // Get all users
-router.get("/all", protect, adminOnly, getAllUsers);
+// router.get("/all", protect, adminOnly, getAllUsers);
 router.get("/", protect, adminOnly, getAllUsers);
 
 // Toggle active/inactive status
