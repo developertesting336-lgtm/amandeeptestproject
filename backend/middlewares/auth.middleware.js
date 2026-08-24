@@ -3,15 +3,38 @@ import User from "../models/user.js";
 
 export const protect = async (req, res, next) => {
   try {
-    let token;
+    // let token;
+
+    const getToken = (req) => {
+      // 1. Check HTTP-only cookie
+      if (req.cookies?.token) {
+        return req.cookies.token;
+      }
+
+      // 2. Check Authorization header
+      const authHeader = req.headers.authorization;
+
+      if (authHeader?.startsWith("Bearer ")) {
+        return authHeader.split(" ")[1];
+      }
+
+      return null;
+    };
 
 
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer ")
-    ) {
-      token = req.headers.authorization.split(" ")[1];
-    }
+    const token = getToken(req);
+
+    // console.log("token", token)
+
+
+
+
+    // if (
+    //   req.headers.authorization &&
+    //   req.headers.authorization.startsWith("Bearer ")
+    // ) {
+    //   token = req.headers.authorization.split(" ")[1];
+    // }
 
     if (!token) {
       return res.status(401).json({

@@ -16,8 +16,9 @@ import order from './routes/user.order.js'
 // import stripe from './config/stripe.js'
 import { stripeWebhook } from './controllers/user.order.js'
 import adminOrderRoutes from './routes/admin.order.js'
+import adminUserRoutes from './routes/admin.users.routes.js'
 import googleAuth from './routes/oauth.js'
-
+import cookieParser from "cookie-parser";
 
 
 dotenv.config();
@@ -42,9 +43,16 @@ app.post(
 
 
 
-app.use(cors());
+// app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+  })
+);
 
 app.use(express.json({ limit: "10mb" }));
+app.use(cookieParser());
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(
   "/uploads",
@@ -75,6 +83,7 @@ app.use('/api', userProducts)
 app.use('/api/order', order)
 
 app.use('/api/admin/order', adminOrderRoutes)
+app.use('/api/admin/users', adminUserRoutes)
 
 
 

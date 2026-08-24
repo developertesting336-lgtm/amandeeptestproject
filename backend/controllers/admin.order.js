@@ -142,6 +142,8 @@ export const updatedOrderByAdmin = async (req, res) => {
 
         const updateData = {};
 
+        console.log("update data", updateData)
+
         for (const field of allowedFields) {
             if (req.body[field] !== undefined) {
                 updateData[field] = req.body[field];
