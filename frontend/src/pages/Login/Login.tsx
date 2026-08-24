@@ -40,12 +40,15 @@ const Login = () => {
       const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
+
+        credentials: "include",
+
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify(formData),
       });
-
       //   console.log(JSON.stringify(formData))
 
 
@@ -56,7 +59,7 @@ const Login = () => {
         throw new Error(data.message || "Login failed");
       }
 
-      login(data.token, data.user);
+      login(data.user);
 
       if (data.user.role === "admin") {
         navigate("/admin/dashboard");

@@ -63,6 +63,7 @@ export const getWishlist = async (token?: string | null): Promise<GetWishlistRes
     const response = await fetch(`${API_BASE_URL}/api/wishlist`, {
       method: "GET",
       headers,
+      credentials: "include",
     });
 
     const result = await response.json();
@@ -122,6 +123,7 @@ export const toggleWishlistItem = async (
     const response = await fetch(`${API_BASE_URL}/api/wishlist/${productId}`, {
       method: "POST",
       headers,
+      credentials: "include",
     });
 
     const result = await response.json();

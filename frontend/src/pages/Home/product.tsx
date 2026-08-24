@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
+import { useAuth } from "../../context/authContext";
 import "./ProductSection.css";
 
 import product1 from "../../assets/1.jpeg";
@@ -37,15 +38,14 @@ const formatImageUrl = (image: any, fallback: string = product1): string => {
   return `${API_BASE_URL}${formattedPath}`;
 };
 
-const CATEGORIES = ["All", "Electronics", "Fashion", "Toys"];
 const CARD_WIDTH = 205; // 205px per slide container
 
 const ProductSection = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const [allProducts, setAllProducts] = useState<DisplayProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState("All");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
@@ -121,14 +121,14 @@ const ProductSection = () => {
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!isAuthenticated) {
+          setWishlist({});
+          return;
+        }
 
         const response = await fetch(`${API_BASE_URL}/api/wishlist`, {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          credentials: "include",
         });
 
         const data = await response.json();
@@ -146,13 +146,9 @@ const ProductSection = () => {
     };
 
     fetchWishlist();
-  }, []);
+  }, [isAuthenticated]);
 
-  const displayList = activeCategory === "All"
-    ? allProducts
-    : allProducts.filter(
-      (p) => p.category.toLowerCase() === activeCategory.toLowerCase()
-    );
+  const displayList = allProducts;
 
   // Calculate precise max scroll distance and maximum slide index
   const totalTrackWidth = displayList.length * CARD_WIDTH;
@@ -191,9 +187,8 @@ const ProductSection = () => {
 
   const toggleWishlist = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    const token = localStorage.getItem("token");
 
-    if (!token) {
+    if (!isAuthenticated) {
       navigate("/login");
       return;
     }
@@ -203,8 +198,8 @@ const ProductSection = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
       });
 
       const data = await response.json();
@@ -231,28 +226,13 @@ const ProductSection = () => {
   return (
     <section className="product-section">
       <div className="product-section-wrapper">
-        {/* HEADER & CATEGORY TABS */}
+        {/* HEADER */}
         <div className="product-section-header">
           <div className="product-heading-content">
             <h2 className="product-section-title">Featured Products</h2>
           </div>
 
           <div className="product-header-actions">
-            <div className="product-category-tabs">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat}
-                  className={`product-tab-btn ${activeCategory === cat ? "active" : ""}`}
-                  onClick={() => {
-                    setActiveCategory(cat);
-                    setCurrentIndex(0);
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
             <button
               className="product-section-viewall"
               onClick={() => navigate("/products")}
@@ -308,7 +288,7 @@ const ProductSection = () => {
               </div>
             ) : displayList.length === 0 ? (
               <div style={{ padding: "40px 20px", textAlign: "center", color: "#64748b" }}>
-                <p>No featured products found in {activeCategory}.</p>
+                <p>No featured products found.</p>
               </div>
             ) : (
               <div

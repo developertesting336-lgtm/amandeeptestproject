@@ -216,7 +216,7 @@ const EditProduct = () => {
 
         for (const endpoint of productEndpoints) {
           try {
-            const res = await fetch(endpoint, { headers });
+            const res = await fetch(endpoint, { headers, credentials: "include" });
             if (res.ok) {
               productResponse = res;
               break;
@@ -241,7 +241,7 @@ const EditProduct = () => {
 
         for (const endpoint of categoryEndpoints) {
           try {
-            const res = await fetch(endpoint, { headers });
+            const res = await fetch(endpoint, { headers, credentials: "include" });
             if (res.ok) {
               const categoryData = await res.json();
               const catList =
@@ -655,6 +655,7 @@ const EditProduct = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
           body: formData,
         }
       );

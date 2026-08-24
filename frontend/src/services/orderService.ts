@@ -196,6 +196,7 @@ export const placeCodOrder = async (
     const response = await fetch(`${API_BASE_URL}/api/order/cod`, {
       method: "POST",
       headers,
+      credentials: "include",
       body: JSON.stringify(payload),
     });
 
@@ -254,6 +255,7 @@ export const placestripeOrder = async (
     const response = await fetch(`${API_BASE_URL}/api/order/payment-checkout-session`, {
       method: "POST",
       headers,
+      credentials: "include",
       body: JSON.stringify(payload),
     });
 
@@ -311,6 +313,7 @@ export const getUserOrders = async (token?: string | null): Promise<GetOrdersRes
     const response = await fetch(`${API_BASE_URL}/api/order`, {
       method: "GET",
       headers,
+      credentials: "include",
     });
 
     const result = await response.json();
@@ -381,6 +384,7 @@ export const cancelUserOrder = async (
     let response = await fetch(`${API_BASE_URL}/api/order/cancel/${orderId}`, {
       method: "PATCH",
       headers,
+      credentials: "include",
       body: JSON.stringify({ reason }),
     });
 
@@ -388,6 +392,7 @@ export const cancelUserOrder = async (
       response = await fetch(`${API_BASE_URL}/api/order/cancel/${orderId}`, {
         method: "POST",
         headers,
+        credentials: "include",
         body: JSON.stringify({ reason }),
       });
     }
@@ -434,12 +439,14 @@ export const getAdminOrders = async (token?: string | null): Promise<GetOrdersRe
     let response = await fetch(`${API_BASE_URL}/api/admin/order`, {
       method: "GET",
       headers,
+      credentials: "include",
     });
 
     if (response.status === 404) {
       response = await fetch(`${API_BASE_URL}/api/admin/orders`, {
         method: "GET",
         headers,
+        credentials: "include",
       });
     }
 
@@ -508,6 +515,7 @@ export const updateAdminOrderStatus = async (
     let response = await fetch(`${API_BASE_URL}/api/admin/order/${orderId}`, {
       method: "PATCH",
       headers,
+      credentials: "include",
       body: JSON.stringify(payload),
     });
 
@@ -515,6 +523,7 @@ export const updateAdminOrderStatus = async (
       response = await fetch(`${API_BASE_URL}/api/admin/orders/${orderId}`, {
         method: "PATCH",
         headers,
+        credentials: "include",
         body: JSON.stringify(payload),
       });
     }
@@ -523,6 +532,7 @@ export const updateAdminOrderStatus = async (
       response = await fetch(`${API_BASE_URL}/api/order/status/${orderId}`, {
         method: "PATCH",
         headers,
+        credentials: "include",
         body: JSON.stringify(payload),
       });
     }
@@ -570,6 +580,7 @@ export const refundAdminOrder = async (
     let response = await fetch(`${API_BASE_URL}/api/admin/order/refund/${orderId}`, {
       method: "PATCH",
       headers,
+      credentials: "include",
     });
 
     if (response.status === 404 || response.status === 405) {
@@ -577,6 +588,7 @@ export const refundAdminOrder = async (
       response = await fetch(`${API_BASE_URL}/api/order/refund/${orderId}`, {
         method: "PATCH",
         headers,
+        credentials: "include",
       });
     }
 
@@ -585,6 +597,7 @@ export const refundAdminOrder = async (
       response = await fetch(`${API_BASE_URL}/api/refund/${orderId}`, {
         method: "PATCH",
         headers,
+        credentials: "include",
       });
     }
 

@@ -47,6 +47,32 @@
   font-size: 14px;
 }
 
+.users-refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #1e293b;
+  font-family: 'Inter', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.users-refresh-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+
+.users-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* Toolbar */
 .users-toolbar {
   max-width: 1300px;
@@ -113,7 +139,7 @@
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  min-width: 900px;
+  min-width: 950px;
 }
 
 .users-table thead {
@@ -151,6 +177,11 @@
   background: #f8fafc;
 }
 
+.users-table tbody tr.inactive-row {
+  opacity: 0.75;
+  background: #fafafa;
+}
+
 /* Badges */
 .role-badge {
   display: inline-flex;
@@ -174,6 +205,43 @@
   border: 1px solid #e2e8f0;
 }
 
+/* Status Pills */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.status-active {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.status-inactive {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.oauth-provider-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #475569;
+}
+
 .user-cell {
   display: flex;
   align-items: center;
@@ -192,6 +260,7 @@
   color: #2563eb;
   font-weight: 700;
   font-size: 14px;
+  flex-shrink: 0;
 }
 
 .user-id-sub {
@@ -205,6 +274,49 @@
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.user-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.user-toggle-btn.active {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.user-toggle-btn.active:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.user-toggle-btn.inactive {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.user-toggle-btn.inactive:hover:not(:disabled) {
+  background: #d1fae5;
+  color: #059669;
+  border-color: #6ee7b7;
+}
+
+.user-toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .user-delete-btn {
@@ -221,10 +333,15 @@
   transition: all 0.2s ease;
 }
 
-.user-delete-btn:hover {
+.user-delete-btn:hover:not(:disabled) {
   background: #dc2626;
   border-color: #dc2626;
   color: #ffffff;
+}
+
+.user-delete-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 /* Loading & Empty */
@@ -259,3 +376,15 @@
   font-size: 13.5px;
 }
 
+.spin-icon {
+  animation: users-spin 1s linear infinite;
+}
+
+@keyframes users-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

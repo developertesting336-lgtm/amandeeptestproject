@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowRight, Heart, ShoppingCart } from "lucide-react";
 import { useCart } from "../../context/cartContext";
+import { useAuth } from "../../context/authContext";
 import product1 from "../../assets/1.jpeg";
 import "./HomeProductsGrid.css";
 
@@ -39,6 +40,7 @@ const formatImageUrl = (path?: any, fallback: string = product1) => {
 const HomeProductsGrid = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
@@ -71,14 +73,14 @@ const HomeProductsGrid = () => {
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!isAuthenticated) {
+          setWishlist({});
+          return;
+        }
 
         const response = await fetch(`${API_BASE_URL}/api/wishlist`, {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          credentials: "include",
         });
 
         const data = await response.json();
@@ -96,13 +98,12 @@ const HomeProductsGrid = () => {
     };
 
     fetchWishlist();
-  }, []);
+  }, [isAuthenticated]);
 
   const toggleWishlist = async (e: React.MouseEvent, productId: string) => {
     e.stopPropagation();
-    const token = localStorage.getItem("token");
 
-    if (!token) {
+    if (!isAuthenticated) {
       navigate("/login");
       return;
     }
@@ -112,8 +113,8 @@ const HomeProductsGrid = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
       });
 
       const data = await response.json();

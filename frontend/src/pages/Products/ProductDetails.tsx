@@ -12,6 +12,7 @@ import {
   Heart,
 } from "lucide-react";
 import { useCart } from "../../context/cartContext";
+import { useAuth } from "../../context/authContext";
 import Footer from "../Home/footersection";
 import "./ProductDetails.css";
 
@@ -91,6 +92,7 @@ const ProductDetails = () => {
   const { productId } = useParams<{ productId: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -103,15 +105,15 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!isAuthenticated) {
+          setIsWishlisted(false);
+          return;
+        }
 
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
         const response = await fetch(`${API_BASE_URL}/api/wishlist`, {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          credentials: "include",
         });
 
         const data = await response.json();
@@ -127,29 +129,32 @@ const ProductDetails = () => {
     };
 
     fetchWishlist();
-  }, [productId]);
+  }, [productId, isAuthenticated]);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("token");
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
         let res = await fetch(`${API_BASE_URL}/api/admin/product/${productId}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          credentials: "include",
         });
         let result = await res.json();
         let fetchedProduct = result.data?.product || result.product || result.data;
 
         if (!res.ok || !fetchedProduct || typeof fetchedProduct !== "object" || !fetchedProduct._id) {
-          res = await fetch(`${API_BASE_URL}/api/products/${productId}`);
+          res = await fetch(`${API_BASE_URL}/api/products/${productId}`, {
+            credentials: "include",
+          });
           result = await res.json();
           fetchedProduct = result.data?.product || result.product || result.data;
         }
 
         if (!res.ok || !fetchedProduct || typeof fetchedProduct !== "object" || !fetchedProduct._id) {
-          res = await fetch(`${API_BASE_URL}/api/products`);
+          res = await fetch(`${API_BASE_URL}/api/products`, {
+            credentials: "include",
+          });
           result = await res.json();
           const list = result.data?.products || result.data || result.products || (Array.isArray(result) ? result : []);
           if (Array.isArray(list) && list.length > 0) {
@@ -163,23 +168,21 @@ const ProductDetails = () => {
           // Default rich mock sample matching product details page architecture
           setProduct({
             _id: productId || "sam-tv-55",
-            name: "Samsung 55 Inch Crystal 4K UHD Smart TV",
-            short_description: "Crystal Display Technology & HDR Support with Smart TV Built-in Wi-Fi.",
-            full_description:
-              "<p>Experience crystal clear colors that are fine-tuned to deliver a naturally crisp and vivid picture. The powerful 4K Crystal Processor automatically scales content to stunning 4K UHD resolution.</p><p>Featuring HDR (High Dynamic Range) support for unmatched contrast and radiant detail in both dark and bright scenes. Includes multi-voice assistant support, instant streaming app access, and sleek 3-side bezel-less design.</p>",
+            name: "Samsung 55\" Crystal 4K UHD Smart TV (2025 Model)",
+            brand: "Samsung",
+            sku: "SAM-55-4K-UHD",
+            stock: 15,
+            price: 54999,
+            salePrice: 42999,
+            category: { _id: "cat-electronics", name: "Electronics" },
+            subcategory: { _id: "sub-tv", name: "Televisions" },
+            short_description: "Ultra HD 4K Resolution with Crystal Processor 4K, HDR10+ and Dolby Audio.",
+            full_description: "Experience lifelike picture quality with vivid color expressions and crisp details. Features 3 HDMI ports, 2 USB ports, ultra-slim bezel design and Smart Hub for all your OTT streaming services.",
             highlights: [
-              "55-inch 4K Ultra HD Display (3840 x 2160)",
               "Crystal Display Technology & HDR Support",
               "Smart TV with Built-in Wi-Fi & Streaming Apps",
               "Multiple HDMI and USB Ports with Slim Bezel Design",
             ],
-            price: 64999,
-            salePrice: 57999,
-            sku: "SAM-TV-55-4K-001",
-            stock: 10,
-            category: { _id: "cat-elec", name: "Electronics" },
-            subcategory: { _id: "sub-tv", name: "Televisions" },
-            brand: "SAMSUNG",
             images: [product1],
             isFeatured: true,
             warranty: {
@@ -242,9 +245,8 @@ const ProductDetails = () => {
 
   const toggleWishlist = async () => {
     if (!product?._id) return;
-    const token = localStorage.getItem("token");
 
-    if (!token) {
+    if (!isAuthenticated) {
       navigate("/login");
       return;
     }
@@ -255,8 +257,8 @@ const ProductDetails = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
       });
 
       const data = await response.json();

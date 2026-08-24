@@ -89,20 +89,25 @@ export const validateAddress = (address: Partial<Address>): AddressFormErrors =>
  */
 export const fetchUserAddresses = async (token?: string | null): Promise<Address[]> => {
   try {
-    if (token) {
-      const response = await fetch(`${API_BASE_URL}/api/user/addresses`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+    const activeToken = token || localStorage.getItem("token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (activeToken) {
+      headers["Authorization"] = `Bearer ${activeToken}`;
+    }
 
-      if (response.ok) {
-        const data = await response.json();
-        const list = Array.isArray(data) ? data : data.addresses || [];
-        if (list.length > 0) {
-          return list.slice(0, 3);
-        }
+    const response = await fetch(`${API_BASE_URL}/api/user/addresses`, {
+      method: "GET",
+      headers,
+      credentials: "include",
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      const list = Array.isArray(data) ? data : data.addresses || [];
+      if (list.length > 0) {
+        return list.slice(0, 3);
       }
     }
   } catch (error) {
@@ -176,20 +181,24 @@ export const saveUserAddress = async (
   // Persist locally
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
 
-  // Sync to API in background if logged in
-  if (token) {
-    try {
-      await fetch(`${API_BASE_URL}/api/user/addresses`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(normalizedAddress),
-      });
-    } catch (apiErr) {
-      console.warn("API address save failed, saved locally:", apiErr);
+  // Sync to API in background
+  try {
+    const activeToken = token || localStorage.getItem("token");
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (activeToken) {
+      headers["Authorization"] = `Bearer ${activeToken}`;
     }
+
+    await fetch(`${API_BASE_URL}/api/user/addresses`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(normalizedAddress),
+    });
+  } catch (apiErr) {
+    console.warn("API address save failed, saved locally:", apiErr);
   }
 
   return { success: true, data: updatedList, message: "Address saved successfully." };
@@ -212,15 +221,20 @@ export const deleteUserAddress = async (
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
 
-  if (token) {
-    try {
-      await fetch(`${API_BASE_URL}/api/user/addresses/${addressId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } catch (err) {
-      console.warn("API address delete failed, deleted locally:", err);
+  try {
+    const activeToken = token || localStorage.getItem("token");
+    const headers: Record<string, string> = {};
+    if (activeToken) {
+      headers["Authorization"] = `Bearer ${activeToken}`;
     }
+
+    await fetch(`${API_BASE_URL}/api/user/addresses/${addressId}`, {
+      method: "DELETE",
+      headers,
+      credentials: "include",
+    });
+  } catch (err) {
+    console.warn("API address delete failed, deleted locally:", err);
   }
 
   return { success: true, data: updatedList };

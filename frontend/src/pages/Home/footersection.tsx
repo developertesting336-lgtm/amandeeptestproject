@@ -63,7 +63,7 @@ const Footer = () => {
 
           <h3>Categories</h3>
 
-          <Link to="/products?category=clothing">
+          <Link to="/products?category=fashion">
             Clothing
           </Link>
 

@@ -157,6 +157,7 @@ const AddProduct = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
         });
 
         const data = await res.json();
@@ -405,6 +406,7 @@ const AddProduct = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
         body: formData,
       });
 
@@ -415,6 +417,7 @@ const AddProduct = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
           body: formData,
         });
       }

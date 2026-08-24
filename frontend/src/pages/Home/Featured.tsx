@@ -59,9 +59,7 @@ const products: Product[] = [
     },
 ];
 
-const FilterButton: React.FC<{ label: string; active?: boolean }> = ({ label, active }) => (
-    <button className={`filter-button ${active ? 'active' : ''}`}>{label}</button>
-);
+
 
 const ProductCard: React.FC<{ product: Product }> = ({ product }) => (
     <div className="product-card">
@@ -104,12 +102,6 @@ const FeaturedProducts: React.FC = () => {
                         <h1 className="main-header">Featured Products</h1>
                     </div>
                     <div className="header-filters">
-                        <div className="filter-buttons">
-                            <FilterButton label="All" active />
-                            <FilterButton label="Electronics" />
-                            <FilterButton label="Fashion" />
-                            <FilterButton label="Toys" />
-                        </div>
                         <button className="view-all-button">View All</button>
                     </div>
                 </header>

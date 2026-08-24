@@ -1,18 +1,19 @@
 .promo-bar {
   overflow: hidden;
   width: 100%;
-  padding: 18px 0;
+  padding: 20px 0;
   background-color: #f7f6f3;
-  border-top: 0.3px solid #cbcbcb;
-  border-bottom: 0.2px solid #cbcbcb;
+  border-top: 1px solid #e5e3db;
+  border-bottom: 1px solid #e5e3db;
   box-sizing: border-box;
+  position: relative;
 }
 
 .promo-track {
   display: flex;
   align-items: center;
   width: max-content;
-  animation: scroll 25s linear infinite;
+  animation: scroll 28s linear infinite;
 }
 
 .promo-bar:hover .promo-track {
@@ -25,25 +26,47 @@
 }
 
 .promo-item {
-  flex-shrink: 0;
-  margin: 0 36px;
+  background: transparent;
+  border: none;
+  padding: 6px 12px;
+  margin: 0 28px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  border-radius: 10px;
+  flex-shrink: 0;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.promo-item:focus-visible {
+  outline: 2px solid #7257c2;
+  outline-offset: 2px;
 }
 
 .promo-image {
-  height: 48px;
+  height: 44px;
   width: auto;
   max-width: 120px;
   object-fit: contain;
-  filter: grayscale(100%) opacity(0.7);
-  transition: all 0.3s ease;
+  filter: grayscale(100%) opacity(0.65);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
 }
 
-.promo-image:hover {
+.promo-item:hover {
+  background: rgba(255, 255, 255, 0.85);
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.promo-item:hover .promo-image {
   filter: grayscale(0%) opacity(1);
-  transform: scale(1.1);
+}
+
+.promo-item:active {
+  transform: scale(0.96);
 }
 
 @keyframes scroll {
@@ -53,5 +76,21 @@
 
   to {
     transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 768px) {
+  .promo-bar {
+    padding: 14px 0;
+  }
+
+  .promo-item {
+    margin: 0 16px;
+    padding: 4px 8px;
+  }
+
+  .promo-image {
+    height: 36px;
+    max-width: 90px;
   }
 }

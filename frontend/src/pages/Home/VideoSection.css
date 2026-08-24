@@ -1,145 +1,253 @@
-.video-section {
+/* ===================================================
+   PROMOTIONAL VIDEO BANNER SECTION
+   =================================================== */
+
+.promo-video-section {
   width: 100%;
-  padding: 30px 3.5% 35px;
-  background-color: #eeebe3;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  padding: 24px 3.5% 32px;
+  background-color: #f4f3ef;
   box-sizing: border-box;
-  border-top: 1px solid #e5e3db;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-.video-section-wrapper {
+.promo-video-grid {
   width: 100%;
-  max-width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
 }
 
-.video-container {
-  width: 100%;
+/* ===================================================
+   CARD BASE
+   =================================================== */
+
+.promo-card {
+  position: relative;
+  min-height: 250px;
+  border-radius: 16px;
+  overflow: hidden;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  gap: 36px;
+  align-items: stretch;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
 }
 
-.video-container.reverse {
-  flex-direction: row;
+.promo-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.09);
 }
 
-.video-content {
+/* ===================================================
+   CARD 1: iPhone 15 Pro (Metallic Silver Gradient)
+   =================================================== */
+
+.promo-card-iphone {
+  background: linear-gradient(135deg, #c7cbd3 0%, #b2b9c5 50%, #9ba3b2 100%);
+}
+
+/* ===================================================
+   CARD 2: AirPods Pro (Ice Blue/Lavender Gradient)
+   =================================================== */
+
+.promo-card-airpods {
+  background: linear-gradient(135deg, #eff2fc 0%, #e1e7f9 50%, #d8e0f5 100%);
+}
+
+/* ===================================================
+   CARD INFO (LEFT COLUMN)
+   =================================================== */
+
+.promo-card-info {
   flex: 1;
+  padding: 28px 20px 28px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  z-index: 2;
 }
 
-.video-tag {
+/* Badges */
+.promo-badge {
   display: inline-block;
-  background: #7257c2;
-  color: #ffffff;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 1.2px;
-  margin-bottom: 12px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
-  box-shadow: 0 2px 8px rgba(114, 87, 194, 0.25);
-}
-
-.video-content h2 {
-  font-size: 28px;
+  margin-bottom: 12px;
   line-height: 1.2;
-  margin: 0 0 12px;
-  color: #0f172a;
-  font-weight: 800;
-  letter-spacing: -0.4px;
 }
 
-.video-content p {
-  font-size: 13.5px;
-  color: #475569;
-  line-height: 1.6;
-  max-width: 440px;
-  margin-bottom: 20px;
-}
-
-.video-content button {
-  padding: 10px 24px;
-  border: none;
-  background: #0f172a;
+.badge-dark {
+  background-color: #0b0f19;
   color: #ffffff;
+}
+
+.badge-blue {
+  background-color: #3b49df;
+  color: #ffffff;
+}
+
+/* Titles */
+.promo-card-title {
+  font-size: 27px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
+  line-height: 1.15;
+}
+
+.promo-card-generation {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 6px 0;
+  line-height: 1.2;
+}
+
+/* Taglines */
+.promo-card-tagline {
+  font-size: 13px;
+  color: #475569;
+  font-weight: 500;
+  margin: 0 0 14px 0;
+  line-height: 1.4;
+}
+
+.promo-card-iphone .promo-card-tagline {
+  color: #334155;
+}
+
+/* Price */
+.promo-card-price {
+  font-size: 14.5px;
+  color: #334155;
+  font-weight: 500;
+  margin: 0 0 18px 0;
+}
+
+.promo-card-price strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-left: 3px;
+}
+
+/* Button */
+.promo-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background-color: #0b1120;
+  color: #ffffff;
+  padding: 9px 18px;
   border-radius: 8px;
-  cursor: pointer;
   font-size: 13px;
   font-weight: 600;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
-}
-
-.video-content button:hover {
-  background: #7257c2;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(114, 87, 194, 0.25);
-}
-
-.video-card {
-  width: 420px;
-  height: 260px;
-  max-width: 100%;
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
+  text-decoration: none;
+  border: none;
   cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(11, 17, 32, 0.2);
+}
+
+.promo-card-btn:hover {
+  background-color: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(11, 17, 32, 0.3);
+}
+
+.promo-btn-arrow {
+  transition: transform 0.2s ease;
+}
+
+.promo-card-btn:hover .promo-btn-arrow {
+  transform: translateX(3px);
+}
+
+/* ===================================================
+   CARD MEDIA (RIGHT COLUMN)
+   =================================================== */
+
+.promo-card-media {
+  width: 250px;
+  max-width: 48%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
   flex-shrink: 0;
-  /* box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06); */
-  /* border: 1px solid #e2e8f0; */
-  /* background: #0f172a; */
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.video-card:hover {
-  transform: translateY(-3px);
-  border-color: #cbd5e1;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
-}
-
-.video-card video {
+.promo-video {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   display: block;
-  transition: transform 0.5s ease;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.video-card:hover video {
+.promo-card:hover .promo-video {
   transform: scale(1.05);
 }
 
-/* Responsive */
-@media (max-width: 860px) {
+/* ===================================================
+   RESPONSIVE DESIGN
+   =================================================== */
 
-  .video-container,
-  .video-container.reverse {
-    flex-direction: column;
+@media (max-width: 960px) {
+  .promo-video-grid {
+    grid-template-columns: 1fr;
     gap: 20px;
-    text-align: center;
   }
 
-  .video-container.reverse .video-card {
-    order: 1;
+  .promo-card {
+    min-height: 230px;
   }
 
-  .video-container.reverse .video-content {
-    order: 2;
+  .promo-card-info {
+    padding: 24px 16px 24px 24px;
   }
 
-  .video-card {
+  .promo-card-title {
+    font-size: 24px;
+  }
+
+  .promo-card-media {
+    width: 210px;
+  }
+}
+
+@media (max-width: 540px) {
+  .promo-video-section {
+    padding: 16px 3.5% 24px;
+  }
+
+  .promo-card {
+    flex-direction: column-reverse;
+    min-height: auto;
+  }
+
+  .promo-card-media {
     width: 100%;
-    height: 230px;
+    max-width: 100%;
+    height: 180px;
   }
 
-  .video-content p {
-    margin-left: auto;
-    margin-right: auto;
+  .promo-card-info {
+    padding: 20px 20px 24px;
+    align-items: flex-start;
+  }
+
+  .promo-card-title {
+    font-size: 22px;
   }
 }

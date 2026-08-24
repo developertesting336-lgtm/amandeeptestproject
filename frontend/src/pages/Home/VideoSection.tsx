@@ -1,92 +1,70 @@
-import { useRef } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import "./VideoSection.css";
 
-import airpods from "../../assets/products/videos/airpods.mp4";
-import phone from "../../assets/products/videos/phone.mp4";
+import phoneVideo from "../../assets/products/videos/phone.mp4";
+import airpodsVideo from "../../assets/products/videos/airpods.mp4";
 
-const VideoSection = () => {
-  const video1Ref = useRef<HTMLVideoElement>(null);
-  const video2Ref = useRef<HTMLVideoElement>(null);
-
-  const playVideo1 = () => {
-    video1Ref.current?.play();
-  };
-
-  const stopVideo1 = () => {
-    if (video1Ref.current) {
-      video1Ref.current.pause();
-      video1Ref.current.currentTime = 0;
-    }
-  };
-
-  const playVideo2 = () => {
-    video2Ref.current?.play();
-  };
-
-  const stopVideo2 = () => {
-    if (video2Ref.current) {
-      video2Ref.current.pause();
-      video2Ref.current.currentTime = 0;
-    }
-  };
-
+const VideoSection: React.FC = () => {
   return (
-    <section className="video-section">
-      <div className="video-section-wrapper">
+    <section className="promo-video-section">
+      <div className="promo-video-grid">
         
-        {/* FIRST VIDEO ITEM: PHONE */}
-        <div className="video-container">
-          <div className="video-content">
-            <span className="video-tag">NEW ARRIVAL</span>
-            <h2>
-              iPhone 19 Pro
-              <br />
-              Series
-            </h2>
-            <p>
-              Experience revolutionary performance, ultra-retina display, all-day battery life, and pro-grade video capture in a sleek titanium design.
+        {/* CARD 1: iPhone 15 Pro */}
+        <div className="promo-card promo-card-iphone">
+          <div className="promo-card-info">
+            <span className="promo-badge badge-dark">NEW LAUNCH</span>
+            <h2 className="promo-card-title">iPhone 15 Pro</h2>
+            <p className="promo-card-tagline">Titanium. So strong. So light. So Pro.</p>
+            <p className="promo-card-price">
+              From <strong>₹1,34,900</strong>
             </p>
-            <a href="/products?search=iphone">
-              <button>Shop Now</button>
-            </a>
+            <Link to="/products?search=iphone" className="promo-card-btn">
+              <span>Shop Now</span>
+              <ArrowRight size={14} className="promo-btn-arrow" />
+            </Link>
           </div>
 
-          <div
-            className="video-card"
-            onMouseEnter={playVideo1}
-            onMouseLeave={stopVideo1}
-          >
-            <video ref={video1Ref} muted loop playsInline>
-              <source src={phone} type="video/mp4" />
+          <div className="promo-card-media">
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="promo-video"
+            >
+              <source src={phoneVideo} type="video/mp4" />
             </video>
           </div>
         </div>
 
-        {/* SECOND VIDEO ITEM: AIRPODS */}
-        <div className="video-container reverse">
-          <div
-            className="video-card"
-            onMouseEnter={playVideo2}
-            onMouseLeave={stopVideo2}
-          >
-            <video ref={video2Ref} muted loop playsInline>
-              <source src={airpods} type="video/mp4" />
-            </video>
+        {/* CARD 2: AirPods Pro */}
+        <div className="promo-card promo-card-airpods">
+          <div className="promo-card-info">
+            <span className="promo-badge badge-blue">BEST SELLER</span>
+            <h2 className="promo-card-title">AirPods Pro</h2>
+            <p className="promo-card-generation">2nd Generation</p>
+            <p className="promo-card-tagline">Intelligent. Powerful. Effortless.</p>
+            <p className="promo-card-price">
+              From <strong>₹24,900</strong>
+            </p>
+            <Link to="/products?search=airpods" className="promo-card-btn">
+              <span>Shop Now</span>
+              <ArrowRight size={14} className="promo-btn-arrow" />
+            </Link>
           </div>
 
-          <div className="video-content">
-            <span className="video-tag">NEW ARRIVAL</span>
-            <h2>
-              AirPods Max Pro
-              <br />
-              Edition
-            </h2>
-            <p>
-              Enjoy immersive sound with Active Noise Cancellation, 40-hour battery life, crystal clear calling, and premium ergonomics designed for all-day comfort.
-            </p>
-            <a href="/products?search=airpods">
-              <button>Shop Now</button>
-            </a>
+          <div className="promo-card-media">
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="promo-video"
+            >
+              <source src={airpodsVideo} type="video/mp4" />
+            </video>
           </div>
         </div>
 

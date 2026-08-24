@@ -58,6 +58,7 @@ const CategoryList = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
+          credentials: "include",
         }
       );
 
@@ -160,6 +161,7 @@ const CategoryList = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
           body: formData,
         }
       );
@@ -259,6 +261,7 @@ const CategoryList = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
           body: formData,
         }
       );
@@ -309,6 +312,7 @@ const CategoryList = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
         }
       );
 

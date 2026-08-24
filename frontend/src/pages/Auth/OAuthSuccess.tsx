@@ -46,37 +46,43 @@ const OAuthSuccess: React.FC = () => {
     processedRef.current = true;
 
     const token = searchParams.get("token");
+    const userParam = searchParams.get("user");
     const redirectUrl = searchParams.get("redirect");
 
-    if (!token) {
+    if (!token && !userParam) {
       navigate("/login", { replace: true });
       return;
     }
 
     try {
-      const payload = parseJwt(token);
-
-      // console.log("payload from OAuthSuccess ", payload);
-
-      // Support payload.id being the full user object, payload.user, or top-level payload
-      const userObj =
-        payload?.id && typeof payload.id === "object"
-          ? payload.id
-          : payload?.user && typeof payload.user === "object"
-            ? payload.user
-            : payload;
-
-      let user = {
-        _id: userObj?._id || userObj?.id || userObj?.userId || userObj?.sub || (typeof payload?.id === "string" ? payload.id : ""),
-        name:
-          userObj?.name ||
-          userObj?.displayName ||
-          userObj?.username ||
-          (userObj?.email ? userObj.email.split("@")[0] : "User"),
-        email: userObj?.email || "",
-        role: (userObj?.role as string) || "user",
-        ...(typeof userObj === "object" ? userObj : {}),
+      let user: any = {
+        _id: "",
+        name: "User",
+        email: "",
+        role: "user",
       };
+
+      if (token) {
+        const payload = parseJwt(token);
+        const userObj =
+          payload?.id && typeof payload.id === "object"
+            ? payload.id
+            : payload?.user && typeof payload.user === "object"
+              ? payload.user
+              : payload;
+
+        user = {
+          _id: userObj?._id || userObj?.id || userObj?.userId || userObj?.sub || (typeof payload?.id === "string" ? payload.id : ""),
+          name:
+            userObj?.name ||
+            userObj?.displayName ||
+            userObj?.username ||
+            (userObj?.email ? userObj.email.split("@")[0] : "User"),
+          email: userObj?.email || "",
+          role: (userObj?.role as string) || "user",
+          ...(typeof userObj === "object" ? userObj : {}),
+        };
+      }
 
       const userParam = searchParams.get("user");
       if (userParam) {
@@ -89,7 +95,7 @@ const OAuthSuccess: React.FC = () => {
       }
 
       // Store auth session immediately
-      login(token, user);
+      login(user);
 
       // Direct immediate redirect
       if (redirectUrl) {

@@ -10,7 +10,8 @@ interface Tagline {
   updatedAt?: string;
 }
 
-const API_ADMIN_TAGLINES = "http://localhost:5000/api/taglines";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_ADMIN_TAGLINES = `${API_BASE_URL}/api/taglines`;
 
 const Taglines = () => {
   const [taglines, setTaglines] = useState<Tagline[]>([]);
@@ -37,6 +38,7 @@ const Taglines = () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        credentials: "include",
       });
 
       const result = await res.json();
@@ -106,6 +108,7 @@ const Taglines = () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
           title: title.trim(),
           isUsed,
@@ -139,6 +142,7 @@ const Taglines = () => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        credentials: "include",
       });
 
       const result = await res.json();

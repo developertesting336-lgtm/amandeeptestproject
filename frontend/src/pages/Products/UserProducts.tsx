@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useCart } from "../../context/cartContext";
+import { useAuth } from "../../context/authContext";
 import Footer from "../Home/footersection";
 import "./UserProducts.css";
 
@@ -124,49 +125,48 @@ const UserProducts = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { addToCart } = useCart();
+  const { isAuthenticated } = useAuth();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState(""); // Default unselected
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    () => searchParams.get("category")?.trim() || "all"
+  );
+  const [selectedBrand, setSelectedBrand] = useState<string>(
+    () => searchParams.get("brand")?.trim() || ""
+  );
+  const [searchQuery, setSearchQuery] = useState<string>(
+    () => searchParams.get("search")?.trim() || ""
+  );
+  const [sortBy, setSortBy] = useState<string>(
+    () => searchParams.get("sort")?.trim() || ""
+  );
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
 
-
   // Pagination State
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    const p = Number(searchParams.get("page"));
+    return !isNaN(p) && p >= 1 ? p : 1;
+  });
   const [serverTotalPages, setServerTotalPages] = useState<number | null>(null);
 
   // Mobile Bottom Sheet Modal State
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<"filter" | "sort">("filter");
 
-  // Read URL search params
+  // Sync Search, Category, and Brand from URL query parameters
   useEffect(() => {
-    const catParam = searchParams.get("category");
     const searchParam = searchParams.get("search");
+    const categoryParam = searchParams.get("category");
+    const brandParam = searchParams.get("brand");
+    const sortParam = searchParams.get("sort");
     const pageParam = searchParams.get("page");
 
-    if (catParam) {
-      const match = CATEGORIES.find(
-        (c) => c.label.toLowerCase() === catParam.toLowerCase() || c.id.toLowerCase() === catParam.toLowerCase()
-      );
-      if (match) {
-        setSelectedCategory(match.id);
-      } else {
-        setSelectedCategory(catParam);
-      }
-    } else {
-      setSelectedCategory("all");
-    }
-
-    if (searchParam) {
-      setSearchQuery(searchParam);
-    } else {
-      setSearchQuery("");
-    }
-
-    if (pageParam && !isNaN(Number(pageParam))) {
+    setSearchQuery(searchParam ? searchParam.trim() : "");
+    setSelectedCategory(categoryParam ? categoryParam.trim() : "all");
+    setSelectedBrand(brandParam ? brandParam.trim() : "");
+    setSortBy(sortParam ? sortParam.trim() : "");
+    if (pageParam !== null && !isNaN(Number(pageParam))) {
       setCurrentPage(Number(pageParam));
     } else {
       setCurrentPage(1);
@@ -176,15 +176,16 @@ const UserProducts = () => {
   useEffect(() => {
     const fetchWishlist = async () => {
       try {
-        const token = localStorage.getItem("token");
+        if (!isAuthenticated) {
+          setWishlist({});
+          return;
+        }
 
         const response = await fetch(
           `${API_BASE_URL}/api/wishlist`,
           {
             method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            credentials: "include",
           }
         );
 
@@ -209,9 +210,9 @@ const UserProducts = () => {
     };
 
     fetchWishlist();
-  }, []);
+  }, [isAuthenticated]);
 
-  // Fetch Products with Backend API Params
+  // Fetch Products from Backend API using active Search, Category, Brand, Sort, and Page
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -220,6 +221,9 @@ const UserProducts = () => {
         const queryParams = new URLSearchParams();
         if (searchQuery.trim()) {
           queryParams.append("search", searchQuery.trim());
+        }
+        if (selectedBrand.trim()) {
+          queryParams.append("brand", selectedBrand.trim());
         }
         if (selectedCategory && selectedCategory !== "all") {
           queryParams.append("category", selectedCategory);
@@ -251,18 +255,7 @@ const UserProducts = () => {
             setServerTotalPages(null);
           }
         } else {
-          if (queryString) {
-            const fallbackRes = await fetch(`${API_BASE_URL}/api/products`);
-            const fallbackResult = await fallbackRes.json();
-            const fallbackList = fallbackResult.data?.products || fallbackResult.data || fallbackResult.products || [];
-            if (Array.isArray(fallbackList)) {
-              setProducts(fallbackList);
-            } else {
-              setProducts([]);
-            }
-          } else {
-            setProducts([]);
-          }
+          setProducts([]);
           setServerTotalPages(null);
         }
       } catch (err) {
@@ -279,78 +272,65 @@ const UserProducts = () => {
 
   // Toggle/Deselect Sort Option
   const handleSortToggle = (optionId: string) => {
+    const params = new URLSearchParams(searchParams);
     if (sortBy === optionId) {
-      setSortBy("");
+      params.delete("sort");
     } else {
-      setSortBy(optionId);
+      params.set("sort", optionId);
     }
-    setCurrentPage(1);
+    params.delete("page");
+    navigate(`/products${params.toString() ? `?${params.toString()}` : ""}`);
+    setIsMobileFilterOpen(false);
   };
 
   const handleCategorySelect = (catId: string) => {
-    setSelectedCategory(catId);
-    setCurrentPage(1);
+    const params = new URLSearchParams(searchParams);
+    if (catId === "all") {
+      params.delete("category");
+    } else {
+      params.set("category", catId);
+    }
+    params.delete("page");
+    navigate(`/products${params.toString() ? `?${params.toString()}` : ""}`);
+    setIsMobileFilterOpen(false);
   };
 
-  // Filter & Sort
-  const filteredProducts = products
-    .filter((product) => {
-      const catName =
-        typeof product.category === "object"
-          ? product.category?.name || ""
-          : String(product.category || "");
+  const handleClearSearch = () => {
+    const params = new URLSearchParams(searchParams);
+    params.delete("search");
+    params.delete("page");
+    navigate(`/products${params.toString() ? `?${params.toString()}` : ""}`);
+  };
 
-      const cleanCat = catName.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const cleanSelected = selectedCategory.toLowerCase().replace(/[^a-z0-9]/g, "");
+  const handleClearBrand = () => {
+    const params = new URLSearchParams(searchParams);
+    params.delete("brand");
+    params.delete("page");
+    navigate(`/products${params.toString() ? `?${params.toString()}` : ""}`);
+  };
 
-      const matchesCat =
-        selectedCategory === "all" ||
-        cleanCat.includes(cleanSelected) ||
-        cleanSelected.includes(cleanCat) ||
-        catName.toLowerCase().includes(selectedCategory.toLowerCase());
-
-      const cleanSearch = searchQuery.trim().toLowerCase();
-      const matchesSearch =
-        cleanSearch === "" ||
-        product.name.toLowerCase().includes(cleanSearch) ||
-        (product.brand && product.brand.toLowerCase().includes(cleanSearch)) ||
-        cleanCat.includes(cleanSearch.replace(/[^a-z0-9]/g, ""));
-
-      return matchesCat && matchesSearch;
-    })
-    .sort((a, b) => {
-      if (!sortBy) return 0;
-
-      const priceA = a.salePrice !== null && a.salePrice !== undefined ? a.salePrice : a.price;
-      const priceB = b.salePrice !== null && b.salePrice !== undefined ? b.salePrice : b.price;
-
-      if (sortBy === "price-low") return priceA - priceB;
-      if (sortBy === "price-high") return priceB - priceA;
-      if (sortBy === "name") return a.name.localeCompare(b.name);
-      return 0;
-    });
+  // Products to display directly from backend response
+  const displayedProducts = products;
 
   // Calculate Total Pages
   const calculatedTotalPages = serverTotalPages !== null
     ? serverTotalPages
-    : Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
-
-  // Determine Paginated Display List
-  const displayedProducts = serverTotalPages !== null
-    ? filteredProducts
-    : filteredProducts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+    : Math.max(1, Math.ceil(displayedProducts.length / ITEMS_PER_PAGE));
 
   const handleResetFilters = () => {
-    setSelectedCategory("all");
-    setSearchQuery("");
-    setSortBy("");
-    setCurrentPage(1);
+    navigate("/products");
     setIsMobileFilterOpen(false);
   };
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > calculatedTotalPages) return;
-    setCurrentPage(newPage);
+    const params = new URLSearchParams(searchParams);
+    if (newPage > 1) {
+      params.set("page", String(newPage));
+    } else {
+      params.delete("page");
+    }
+    navigate(`/products${params.toString() ? `?${params.toString()}` : ""}`);
     window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
   };
 
@@ -360,17 +340,20 @@ const UserProducts = () => {
   ) => {
     e.stopPropagation();
 
-    try {
-      const token = localStorage.getItem("token");
+    if (!isAuthenticated) {
+      navigate("/login");
+      return;
+    }
 
+    try {
       const response = await fetch(
         `${API_BASE_URL}/api/wishlist/${id}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
         }
       );
 
@@ -396,7 +379,7 @@ const UserProducts = () => {
     addToCart(productId, 1);
   };
 
-  const isFiltered = selectedCategory !== "all" || searchQuery.trim() !== "" || sortBy !== "";
+  const isFiltered = selectedCategory !== "all" || searchQuery.trim() !== "" || selectedBrand.trim() !== "" || sortBy !== "";
 
   return (
     <div className="user-products-page">
@@ -504,6 +487,45 @@ const UserProducts = () => {
                   );
                 })}
               </div>
+            </div>
+
+            {/* ACTIVE SEARCH & BRAND CHIPS */}
+            <div className="active-filters-chips-wrapper">
+              {searchQuery && (
+                <div className="active-search-chip-bar">
+                  <span className="search-chip-text">
+                    Search: <strong>"{searchQuery}"</strong>
+                  </span>
+                  <button
+                    type="button"
+                    className="search-chip-clear"
+                    onClick={handleClearSearch}
+                    title="Clear search"
+                    aria-label="Clear search"
+                  >
+                    <X size={13} />
+                    <span>Clear</span>
+                  </button>
+                </div>
+              )}
+
+              {selectedBrand && (
+                <div className="active-search-chip-bar">
+                  <span className="search-chip-text">
+                    Brand: <strong>"{selectedBrand}"</strong>
+                  </span>
+                  <button
+                    type="button"
+                    className="search-chip-clear"
+                    onClick={handleClearBrand}
+                    title="Clear brand filter"
+                    aria-label="Clear brand filter"
+                  >
+                    <X size={13} />
+                    <span>Clear</span>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* PRODUCTS GRID */}

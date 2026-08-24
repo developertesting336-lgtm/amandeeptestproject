@@ -112,7 +112,7 @@ const ProductList = () => {
         // Try primary admin endpoint
         let response = await fetch(
           `${API_BASE_URL}/api/admin/all/products?${queryParams.toString()}`,
-          { headers }
+          { headers, credentials: "include" }
         );
         let result: any = null;
 
@@ -128,7 +128,7 @@ const ProductList = () => {
         if (!response.ok || !result) {
           response = await fetch(
             `${API_BASE_URL}/api/admin/products?${queryParams.toString()}`,
-            { headers }
+            { headers, credentials: "include" }
           );
           if (response.ok) {
             try {
@@ -143,7 +143,7 @@ const ProductList = () => {
         if (!response.ok || !result) {
           response = await fetch(
             `${API_BASE_URL}/api/products?${queryParams.toString()}`,
-            { headers }
+            { headers, credentials: "include" }
           );
           if (response.ok) {
             try {
@@ -322,6 +322,7 @@ const ProductList = () => {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          credentials: "include",
         }
       );
 
@@ -333,6 +334,7 @@ const ProductList = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
+            credentials: "include",
           }
         );
       }
@@ -345,6 +347,7 @@ const ProductList = () => {
             headers: {
               Authorization: `Bearer ${token}`,
             },
+            credentials: "include",
           }
         );
       }
@@ -382,6 +385,7 @@ const ProductList = () => {
         {
           method: "PUT",
           headers,
+          credentials: "include",
         }
       );
 
@@ -434,6 +438,7 @@ const ProductList = () => {
         {
           method: "PUT",
           headers,
+          credentials: "include",
         }
       );
 
