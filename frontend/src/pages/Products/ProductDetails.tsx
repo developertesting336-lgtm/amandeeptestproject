@@ -10,6 +10,7 @@ import {
   Sparkles,
   Check,
   Heart,
+  X,
 } from "lucide-react";
 import { useCart } from "../../context/cartContext";
 import { useAuth } from "../../context/authContext";
@@ -418,21 +419,15 @@ const ProductDetails = () => {
   return (
     <div className="pdp-page">
       <div className="pdp-container">
-        {/* TOP HEADER SECTION */}
+        {/* BREADCRUMB NAVIGATION */}
         <div className="pdp-header-zone">
-          <h1 className="pdp-page-heading">Product Details Page (PDP) Layout & Architecture</h1>
-          <p className="pdp-page-subheading">
-            Mapping raw backend JSON into high-converting e-commerce UI zones
-          </p>
-
-          {/* BREADCRUMB */}
           <nav className="pdp-breadcrumb" aria-label="Breadcrumb">
             <Link to="/" className="pdp-bc-link">
               Home
             </Link>
             <ChevronRight size={13} className="pdp-bc-separator" />
             <Link to="/products" className="pdp-bc-link">
-              {categoryName || "Electronics"}
+              {categoryName || "Products"}
             </Link>
             {Boolean(subcategoryName) && (
               <>
@@ -809,6 +804,38 @@ const ProductDetails = () => {
           )}
         </div>
       </div>
+
+      {/* TOAST NOTIFICATION */}
+      {addedNotice && (
+        <aside
+          className="pdp-toast-notification"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="pdp-toast-icon-wrap">
+            <Check size={18} />
+          </div>
+          <div className="pdp-toast-body">
+            <span className="pdp-toast-title">Added to Cart!</span>
+            <span className="pdp-toast-msg">{quantity} x "{product.name}" added to cart</span>
+          </div>
+          <button
+            type="button"
+            className="pdp-toast-action-btn"
+            onClick={() => navigate("/cart")}
+          >
+            View Cart
+          </button>
+          <button
+            type="button"
+            className="pdp-toast-close-btn"
+            onClick={() => setAddedNotice(false)}
+            aria-label="Close notification"
+          >
+            <X size={15} />
+          </button>
+        </aside>
+      )}
 
       <Footer />
     </div>

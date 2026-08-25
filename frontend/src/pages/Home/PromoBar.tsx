@@ -24,7 +24,7 @@ interface PromoBrand {
 const HARDCODED_BRANDS: PromoBrand[] = [
   { id: "adidas", name: "Adidas", query: "Adidas", image: adidas },
   { id: "apple", name: "apple", query: "apple", image: clothImg },
-  { id: "electronic", name: "Electronics", query: "Electronics", image: grosImg },
+  // { id: "electronic", name: "Electronics", query: "Electronics", image: grosImg },
   { id: "gucci", name: "gucci", query: "gucci", image: toyImg },
   { id: "louis", name: "Louis Vuitton", query: "Louis Vuitton", image: iphoneImg },
   { id: "luic", name: "Louis Philippe", query: "Louis Philippe", image: luic },

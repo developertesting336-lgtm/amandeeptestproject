@@ -54,9 +54,9 @@ const CATEGORIES = [
   { id: "all", label: "All Categories" },
   { id: "electronics", label: "Electronics" },
   { id: "fashion", label: "Fashion" },
-  { id: "home-living", label: "Home & Living" },
-  { id: "sports-outdoors", label: "Sports & Outdoors" },
-  { id: "beauty-health", label: "Beauty & Health" },
+  { id: "Home & Living", label: "Home & Living" },
+  { id: "Sports & Outdoors", label: "Sports & Outdoors" },
+  { id: "Beauty & Health", label: "Beauty & Health" },
   { id: "toys", label: "Toys & Games" },
 ];
 
@@ -78,7 +78,7 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   "http://localhost:5000";
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 50;
 
 // =====================================================
 // IMAGE URL FORMATTER
@@ -142,6 +142,7 @@ const UserProducts = () => {
     () => searchParams.get("sort")?.trim() || ""
   );
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState<number>(() => {
@@ -268,7 +269,7 @@ const UserProducts = () => {
     };
 
     fetchProducts();
-  }, [searchQuery, selectedCategory, sortBy, currentPage]);
+  }, [searchQuery, selectedCategory, selectedBrand, sortBy, currentPage]);
 
   // Toggle/Deselect Sort Option
   const handleSortToggle = (optionId: string) => {
@@ -374,9 +375,13 @@ const UserProducts = () => {
     }
   };
 
-  const handleAddToCart = (e: React.MouseEvent, productId: string) => {
+  const handleAddToCart = async (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
-    addToCart(productId, 1);
+    await addToCart(product._id, 1);
+    setToastMessage(`"${product.name}" added to your cart!`);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3000);
   };
 
   const isFiltered = selectedCategory !== "all" || searchQuery.trim() !== "" || selectedBrand.trim() !== "" || sortBy !== "";
@@ -384,14 +389,6 @@ const UserProducts = () => {
   return (
     <div className="user-products-page">
       <main className="user-products-container">
-        {/* HEADER */}
-        <div className="user-products-header">
-          <h1 className="user-products-title">Shop Catalog</h1>
-          <p className="user-products-subtitle">
-            Explore premium items across all categories with best offers
-          </p>
-        </div>
-
         {/* LAYOUT GRID */}
         <div className="user-products-layout">
           {/* DESKTOP PERMANENT SIDEBAR FILTERS (>1024px) */}
@@ -532,7 +529,7 @@ const UserProducts = () => {
             <div className="user-products-grid">
               {loading ? (
                 <>
-                  {Array.from({ length: 8 }).map((_, idx) => (
+                  {Array.from({ length: 12 }).map((_, idx) => (
                     <div key={idx} className="user-product-skeleton-card">
                       <div className="skeleton-image" />
                       <div className="skeleton-pill" />
@@ -633,7 +630,7 @@ const UserProducts = () => {
                           <button
                             type="button"
                             className="user-product-cart-btn"
-                            onClick={(e) => handleAddToCart(e, product._id)}
+                            onClick={(e) => handleAddToCart(e, product)}
                             title="Add to Cart"
                             aria-label="Add to Cart"
                           >
@@ -800,6 +797,38 @@ const UserProducts = () => {
             </button>
           </div>
         </div>
+      )}
+
+      {/* TOAST NOTIFICATION */}
+      {toastMessage && (
+        <aside
+          className="user-product-toast"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="toast-icon-wrap">
+            <Check size={18} />
+          </div>
+          <div className="toast-body">
+            <span className="toast-title">Added to Cart</span>
+            <span className="toast-msg">{toastMessage}</span>
+          </div>
+          <button
+            type="button"
+            className="toast-action-btn"
+            onClick={() => navigate("/cart")}
+          >
+            View Cart
+          </button>
+          <button
+            type="button"
+            className="toast-close-btn"
+            onClick={() => setToastMessage(null)}
+            aria-label="Close notification"
+          >
+            <X size={15} />
+          </button>
+        </aside>
       )}
 
       <Footer />

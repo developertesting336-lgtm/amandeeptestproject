@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowRight, Heart, ShoppingCart } from "lucide-react";
+import { ArrowRight, Heart, ShoppingCart, Check, X } from "lucide-react";
 import { useCart } from "../../context/cartContext";
 import { useAuth } from "../../context/authContext";
 import product1 from "../../assets/1.jpeg";
@@ -44,6 +44,7 @@ const HomeProductsGrid = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -134,9 +135,13 @@ const HomeProductsGrid = () => {
     }
   };
 
-  const handleAddToCart = (e: React.MouseEvent, productId: string) => {
+  const handleAddToCart = async (e: React.MouseEvent, prod: Product) => {
     e.stopPropagation();
-    addToCart(productId, 1);
+    await addToCart(prod._id, 1);
+    setToastMessage(`"${prod.name}" added to your cart!`);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3000);
   };
 
   if (loading) {
@@ -246,7 +251,7 @@ const HomeProductsGrid = () => {
                     <button
                       type="button"
                       className="home-product-add-btn"
-                      onClick={(e) => handleAddToCart(e, prod._id)}
+                      onClick={(e) => handleAddToCart(e, prod)}
                       title="Add to Cart"
                       aria-label="Add to Cart"
                     >
@@ -259,6 +264,38 @@ const HomeProductsGrid = () => {
           })}
         </div>
       </div>
+
+      {/* TOAST NOTIFICATION */}
+      {toastMessage && (
+        <aside
+          className="home-product-toast"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="toast-icon-wrap">
+            <Check size={18} />
+          </div>
+          <div className="toast-body">
+            <span className="toast-title">Added to Cart</span>
+            <span className="toast-msg">{toastMessage}</span>
+          </div>
+          <button
+            type="button"
+            className="toast-action-btn"
+            onClick={() => navigate("/cart")}
+          >
+            View Cart
+          </button>
+          <button
+            type="button"
+            className="toast-close-btn"
+            onClick={() => setToastMessage(null)}
+            aria-label="Close notification"
+          >
+            <X size={15} />
+          </button>
+        </aside>
+      )}
     </section>
   );
 };
