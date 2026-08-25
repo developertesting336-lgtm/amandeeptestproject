@@ -76,7 +76,7 @@ const ProductList = () => {
     1,
     Number(searchParams.get("page")) || 1
   );
-  const [perPage, setPerPage] = useState<number>(10);
+  const [perPage, setPerPage] = useState<number>(100);
   const [search, setSearch] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>("");
@@ -401,8 +401,8 @@ const ProductList = () => {
         typeof result.data?.isActive === "boolean"
           ? result.data.isActive
           : typeof result.product?.isActive === "boolean"
-          ? result.product.isActive
-          : !currentActiveStatus;
+            ? result.product.isActive
+            : !currentActiveStatus;
 
       setAllFetchedProducts((prev) =>
         prev.map((item) =>
@@ -454,8 +454,8 @@ const ProductList = () => {
         typeof result.data?.isFeatured === "boolean"
           ? result.data.isFeatured
           : typeof result.product?.isFeatured === "boolean"
-          ? result.product.isFeatured
-          : !currentFeaturedStatus;
+            ? result.product.isFeatured
+            : !currentFeaturedStatus;
 
       setAllFetchedProducts((prev) =>
         prev.map((item) =>
@@ -760,9 +760,8 @@ const ProductList = () => {
                         type="button"
                         role="switch"
                         aria-checked={product.isActive !== false}
-                        className={`admin-toggle-badge ${
-                          product.isActive !== false ? "active" : "inactive"
-                        }`}
+                        className={`admin-toggle-badge ${product.isActive !== false ? "active" : "inactive"
+                          }`}
                         onClick={() =>
                           handleToggleActive(
                             product._id,
@@ -795,9 +794,8 @@ const ProductList = () => {
                         type="button"
                         role="switch"
                         aria-checked={Boolean(product.isFeatured)}
-                        className={`admin-toggle-badge ${
-                          product.isFeatured ? "featured" : "standard"
-                        }`}
+                        className={`admin-toggle-badge ${product.isFeatured ? "featured" : "standard"
+                          }`}
                         onClick={() =>
                           handleToggleFeatured(
                             product._id,
