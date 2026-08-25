@@ -4,7 +4,7 @@ import "./PromoBar.css";
 
 import adidas from "../../assets/products/promo_logo/adidas.png";
 import clothImg from "../../assets/products/promo_logo/apple.png";
-import grosImg from "../../assets/products/promo_logo/electronic.png";
+// import grosImg from "../../assets/products/promo_logo/electronic.png";
 import toyImg from "../../assets/products/promo_logo/gucci.png";
 import iphoneImg from "../../assets/products/promo_logo/louis.png";
 import luic from "../../assets/products/promo_logo/luic.png";
