@@ -74,6 +74,19 @@ export const googleAuthLogin = async (googleUser, res) => {
 
         const token = generateToken(user);
 
+        // Detect environment
+        const isProduction = process.env.NODE_ENV === "production";
+
+        // Store JWT in HTTP-only cookie
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: isProduction ? "none" : "lax",
+            path: "/",
+            maxAge: 1 * 24 * 60 * 60 * 1000,
+        });
+
+
         return res.redirect(
             `${process.env.FRONTEND_URL}/oauth-success?token=${token}`
         );
