@@ -85,12 +85,11 @@ const Users = () => {
   const handleToggleActive = async (userId: string, currentStatus: boolean = true) => {
     try {
       setTogglingId(userId);
-      const token = localStorage.getItem("token");
+      // const token = localStorage.getItem("token");
 
-      const res = await fetch(`${API_BASE_URL}/api/users/toggle-active/${userId}`, {
+      const res = await fetch(`${API_BASE_URL}/api/admin/users/toggle-active/${userId}`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         credentials: "include",
@@ -107,10 +106,10 @@ const Users = () => {
                 result.data?.isActive !== undefined
                   ? result.data.isActive
                   : result.user?.isActive !== undefined
-                  ? result.user.isActive
-                  : result.isActive !== undefined
-                  ? result.isActive
-                  : !currentStatus;
+                    ? result.user.isActive
+                    : result.isActive !== undefined
+                      ? result.isActive
+                      : !currentStatus;
               return { ...u, isActive: updatedStatus };
             }
             return u;
@@ -204,10 +203,10 @@ const Users = () => {
                 const isToggling = togglingId === u._id;
                 const dateStr = u.createdAt
                   ? new Date(u.createdAt).toLocaleDateString("en-IN", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })
                   : "—";
 
                 return (
@@ -238,9 +237,8 @@ const Users = () => {
 
                     <td>
                       <span
-                        className={`status-pill ${
-                          isUserActive ? "status-active" : "status-inactive"
-                        }`}
+                        className={`status-pill ${isUserActive ? "status-active" : "status-inactive"
+                          }`}
                       >
                         {isUserActive ? (
                           <>
@@ -262,17 +260,16 @@ const Users = () => {
                       <div className="user-actions">
                         <button
                           type="button"
-                          className={`user-toggle-btn ${
-                            isUserActive ? "active" : "inactive"
-                          }`}
+                          className={`user-toggle-btn ${isUserActive ? "active" : "inactive"
+                            }`}
                           onClick={() => handleToggleActive(u._id, isUserActive)}
                           disabled={isToggling || u.role === "admin"}
                           title={
                             u.role === "admin"
                               ? "Admin status cannot be modified"
                               : isUserActive
-                              ? "Deactivate user"
-                              : "Activate user"
+                                ? "Deactivate user"
+                                : "Activate user"
                           }
                         >
                           {isToggling ? (

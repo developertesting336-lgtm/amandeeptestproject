@@ -43,6 +43,7 @@ export const toggleProductActive = async (req, res) => {
 export const toggleProductFeatured = async (req, res) => {
   try {
     const { productID } = req.params;
+    console.log(productID)
 
     const product = await Product.findById(productID);
 

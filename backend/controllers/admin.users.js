@@ -88,6 +88,8 @@ export const toggleUserActive = async (req, res) => {
   try {
     const userId = req.params.userId || req.params.id || req.body.userId || req.body.id;
 
+    console.log("inside toggle user active", userId);
+
     if (!userId) {
       return res.status(400).json({
         success: false,
