@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import { useAuth } from "../../context/authContext";
+import toast from "react-hot-toast";
 import "./ProductSection.css";
 
 import product1 from "../../assets/1.jpeg";
@@ -190,9 +191,11 @@ const ProductSection = () => {
 
     if (!isAuthenticated) {
       navigate("/login");
+      toast.error("Please login to add to wishlist");
       return;
     }
 
+    const toastId = toast.loading("Updating wishlist...");
     try {
       const response = await fetch(`${API_BASE_URL}/api/wishlist/${id}`, {
         method: "POST",
@@ -209,13 +212,19 @@ const ProductSection = () => {
       }
 
       if (data.success) {
+        if (data.action === "added") {
+          toast.success("Item added to your wishlist", { id: toastId });
+        } else {
+          toast.success("Item removed from wishlist", { id: toastId });
+        }
         setWishlist((prev) => ({
           ...prev,
           [id]: data.action === "added",
         }));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Wishlist error:", error);
+      toast.error(error?.message || "Failed to update wishlist", { id: toastId });
     }
   };
 

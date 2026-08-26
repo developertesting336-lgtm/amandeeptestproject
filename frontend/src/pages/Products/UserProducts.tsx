@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../../context/cartContext";
 import { useAuth } from "../../context/authContext";
+import toast from "react-hot-toast";
 import Footer from "../Home/footersection";
 import "./UserProducts.css";
 
@@ -142,7 +143,6 @@ const UserProducts = () => {
     () => searchParams.get("sort")?.trim() || ""
   );
   const [wishlist, setWishlist] = useState<Record<string, boolean>>({});
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState<number>(() => {
@@ -343,9 +343,11 @@ const UserProducts = () => {
 
     if (!isAuthenticated) {
       navigate("/login");
+      toast.error("Please login to add product to wishlist");
       return;
     }
 
+    const toastId = toast.loading("Updating wishlist...");
     try {
       const response = await fetch(
         `${API_BASE_URL}/api/wishlist/${id}`,
@@ -365,23 +367,41 @@ const UserProducts = () => {
       }
 
       if (data.success) {
+        if (data.action === "added") {
+          toast.success("Item added to your wishlist", { id: toastId });
+        } else {
+          toast.success("Item removed from wishlist", { id: toastId });
+        }
         setWishlist((prev) => ({
           ...prev,
           [id]: data.action === "added",
         }));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Wishlist error:", error);
+      toast.error(error?.message || "Failed to update wishlist", { id: toastId });
     }
   };
 
   const handleAddToCart = async (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
-    await addToCart(product._id, 1);
-    setToastMessage(`"${product.name}" added to your cart!`);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
+    if (!isAuthenticated) {
+      navigate("/login");
+      toast.error("Please login to add product to cart");
+      return;
+    }
+
+    const toastId = toast.loading(`Adding "${product.name}" to cart...`);
+    try {
+      const success = await addToCart(product._id, 1);
+      if (success) {
+        toast.success(`"${product.name}" added to cart!`, { id: toastId });
+      } else {
+        toast.error("Failed to add product to cart", { id: toastId });
+      }
+    } catch (error: any) {
+      toast.error("Failed to add product to cart", { id: toastId });
+    }
   };
 
   const isFiltered = selectedCategory !== "all" || searchQuery.trim() !== "" || selectedBrand.trim() !== "" || sortBy !== "";
@@ -797,38 +817,6 @@ const UserProducts = () => {
             </button>
           </div>
         </div>
-      )}
-
-      {/* TOAST NOTIFICATION */}
-      {toastMessage && (
-        <aside
-          className="user-product-toast"
-          role="status"
-          aria-live="polite"
-        >
-          <div className="toast-icon-wrap">
-            <Check size={18} />
-          </div>
-          <div className="toast-body">
-            <span className="toast-title">Added to Cart</span>
-            <span className="toast-msg">{toastMessage}</span>
-          </div>
-          <button
-            type="button"
-            className="toast-action-btn"
-            onClick={() => navigate("/cart")}
-          >
-            View Cart
-          </button>
-          <button
-            type="button"
-            className="toast-close-btn"
-            onClick={() => setToastMessage(null)}
-            aria-label="Close notification"
-          >
-            <X size={15} />
-          </button>
-        </aside>
       )}
 
       <Footer />

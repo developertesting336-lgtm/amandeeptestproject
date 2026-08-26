@@ -158,8 +158,8 @@ export const saveUserAddress = async (
       item.id === address.id
         ? normalizedAddress
         : isDefault
-        ? { ...item, isDefault: false }
-        : item
+          ? { ...item, isDefault: false }
+          : item
     );
   } else {
     // Adding new address (max 3)

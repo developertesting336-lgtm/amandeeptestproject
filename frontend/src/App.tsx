@@ -2,6 +2,7 @@ import Navbar from "./components/layout/Navbar/Navbar";
 import Home from "./pages/Home/Home";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 import About from "./pages/About/About";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
@@ -41,6 +42,33 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#0f172a",
+            color: "#ffffff",
+            borderRadius: "12px",
+            fontSize: "14px",
+            fontWeight: 500,
+            padding: "12px 18px",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
+          },
+          success: {
+            iconTheme: {
+              primary: "#10b981",
+              secondary: "#ffffff",
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: "#ef4444",
+              secondary: "#ffffff",
+            },
+          },
+        }}
+      />
       <Navbar />
 
       <Routes>

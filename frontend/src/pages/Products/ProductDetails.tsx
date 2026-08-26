@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../../context/cartContext";
 import { useAuth } from "../../context/authContext";
+import toast from "react-hot-toast";
 import Footer from "../Home/footersection";
 import "./ProductDetails.css";
 
@@ -230,17 +231,47 @@ const ProductDetails = () => {
   }, [productId]);
 
   const handleAddToCart = async () => {
-    if (product?._id) {
-      await addToCart(product._id, quantity);
-      setAddedNotice(true);
-      setTimeout(() => setAddedNotice(false), 2500);
+    if (!product?._id) return;
+    if (!isAuthenticated) {
+      navigate("/login");
+      toast.error("Please login to add product to cart");
+      return;
+    }
+
+    const toastId = toast.loading(`Adding "${product.name}" to cart...`);
+    try {
+      const success = await addToCart(product._id, quantity);
+      if (success) {
+        setAddedNotice(true);
+        setTimeout(() => setAddedNotice(false), 2500);
+        toast.success(`${quantity} x "${product.name}" added to cart!`, { id: toastId });
+      } else {
+        toast.error("Failed to add product to cart", { id: toastId });
+      }
+    } catch (error: any) {
+      toast.error("Failed to add product to cart", { id: toastId });
     }
   };
 
   const handleBuyNow = async () => {
-    if (product?._id) {
-      await addToCart(product._id, quantity);
-      navigate("/checkout");
+    if (!product?._id) return;
+    if (!isAuthenticated) {
+      navigate("/login");
+      toast.error("Please login to proceed to checkout");
+      return;
+    }
+
+    const toastId = toast.loading("Processing checkout...");
+    try {
+      const success = await addToCart(product._id, quantity);
+      if (success) {
+        toast.dismiss(toastId);
+        navigate("/checkout");
+      } else {
+        toast.error("Failed to proceed to checkout", { id: toastId });
+      }
+    } catch (error: any) {
+      toast.error("Failed to proceed to checkout", { id: toastId });
     }
   };
 
@@ -249,9 +280,11 @@ const ProductDetails = () => {
 
     if (!isAuthenticated) {
       navigate("/login");
+      toast.error("Please login to add to wishlist");
       return;
     }
 
+    const toastId = toast.loading("Updating wishlist...");
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
     try {
       const response = await fetch(`${API_BASE_URL}/api/wishlist/${product._id}`, {
@@ -269,9 +302,15 @@ const ProductDetails = () => {
 
       if (data.success) {
         setIsWishlisted(data.action === "added");
+        if (data.action === "added") {
+          toast.success("Item added to your wishlist", { id: toastId });
+        } else {
+          toast.success("Item removed from wishlist", { id: toastId });
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Wishlist toggle error:", error);
+      toast.error(error?.message || "Failed to update wishlist", { id: toastId });
     }
   };
 
@@ -804,38 +843,6 @@ const ProductDetails = () => {
           )}
         </div>
       </div>
-
-      {/* TOAST NOTIFICATION */}
-      {addedNotice && (
-        <aside
-          className="pdp-toast-notification"
-          role="status"
-          aria-live="polite"
-        >
-          <div className="pdp-toast-icon-wrap">
-            <Check size={18} />
-          </div>
-          <div className="pdp-toast-body">
-            <span className="pdp-toast-title">Added to Cart!</span>
-            <span className="pdp-toast-msg">{quantity} x "{product.name}" added to cart</span>
-          </div>
-          <button
-            type="button"
-            className="pdp-toast-action-btn"
-            onClick={() => navigate("/cart")}
-          >
-            View Cart
-          </button>
-          <button
-            type="button"
-            className="pdp-toast-close-btn"
-            onClick={() => setAddedNotice(false)}
-            aria-label="Close notification"
-          >
-            <X size={15} />
-          </button>
-        </aside>
-      )}
 
       <Footer />
     </div>

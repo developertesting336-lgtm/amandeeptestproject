@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "./authContext";
+// import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 
 export interface CartProduct {
   _id: string;
@@ -35,6 +36,8 @@ interface CartContextType {
   removeFromCart: (productId: string) => Promise<boolean>;
   fetchCart: () => Promise<void>;
 }
+
+
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -182,6 +185,14 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     productId: string,
     quantity: number = 1
   ): Promise<boolean> => {
+
+    // const navigate = useNavigate();
+
+
+    // if (!isAuthenticated) {
+    //   navigate("/login")
+    //   return false
+    // }
 
 
     try {
