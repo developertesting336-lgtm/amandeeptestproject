@@ -105,6 +105,7 @@ const Cart = () => {
               </thead>
               <tbody>
                 {cartItems.map((item) => {
+                  // const quantity = item?.quantity || 0
                   const prod = item.product;
                   const itemPrice = item.price || (prod.salePrice && prod.salePrice < prod.price ? prod.salePrice : prod.price);
                   const itemTotal = itemPrice * item.quantity;

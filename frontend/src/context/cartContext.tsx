@@ -6,7 +6,6 @@ import {
   type ReactNode,
 } from "react";
 import { useAuth } from "./authContext";
-// import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 
 export interface CartProduct {
   _id: string;
@@ -37,8 +36,6 @@ interface CartContextType {
   fetchCart: () => Promise<void>;
 }
 
-
-
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const API_BASE_URL =
@@ -53,6 +50,30 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [totalItems, setTotalItems] = useState<number>(0);
   const [subtotal, setSubtotal] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
+
+  // ==========================================
+  // CALCULATE CART TOTALS
+  // ==========================================
+
+  const calculateTotals = (items: CartItem[]) => {
+    const total = items.reduce(
+      (acc, item) => acc + item.quantity,
+      0
+    );
+
+    const subTotal = items.reduce(
+      (acc, item) =>
+        acc + (item.price ?? item.product.price) * item.quantity,
+      0
+    );
+
+    setTotalItems(total);
+    setSubtotal(subTotal);
+  };
+
+  // ==========================================
+  // PARSE CART RESPONSE
+  // ==========================================
 
   const parseCartResponse = (data: any) => {
     if (!data) return;
@@ -70,7 +91,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const qty = item.quantity || 1;
 
       const itemPrice =
-        item.price ||
+        item.price ??
         (productObj.salePrice &&
           productObj.salePrice < productObj.price
           ? productObj.salePrice
@@ -111,7 +132,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       formattedItems.reduce(
         (acc, item) =>
           acc +
-          (item.price || item.product.price) * item.quantity,
+          (item.price ?? item.product.price) * item.quantity,
         0
       );
 
@@ -119,9 +140,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     setSubtotal(calculatedSubtotal);
   };
 
-  // ==============================
+  // ==========================================
   // FETCH CART
-  // ==============================
+  // ==========================================
 
   const fetchCart = async () => {
     if (!isAuthenticated) {
@@ -136,10 +157,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       const res = await fetch(API_CART, {
         method: "GET",
-
-        // Browser automatically sends HTTP-only cookie
         credentials: "include",
-
         headers: {
           "Content-Type": "application/json",
         },
@@ -155,7 +173,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
           result.message
         );
 
-        // If authentication expired
         if (res.status === 401) {
           setCartItems([]);
           setTotalItems(0);
@@ -169,39 +186,27 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // ==============================
+  // ==========================================
   // FETCH CART WHEN USER LOGS IN
-  // ==============================
+  // ==========================================
 
   useEffect(() => {
     fetchCart();
   }, [isAuthenticated]);
 
-  // ==============================
+  // ==========================================
   // ADD TO CART
-  // ==============================
+  // ==========================================
 
   const addToCart = async (
     productId: string,
     quantity: number = 1
   ): Promise<boolean> => {
-
-    // const navigate = useNavigate();
-
-
-    // if (!isAuthenticated) {
-    //   navigate("/login")
-    //   return false
-    // }
-
-
     try {
       setLoading(true);
 
       const res = await fetch(API_CART, {
         method: "POST",
-
-        // Send HTTP-only cookie automatically
         credentials: "include",
 
         headers: {
@@ -217,7 +222,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       const result = await res.json();
 
       if (res.ok && result.success !== false) {
+        // Adding a product can change an existing cart item,
+        // so fetch the latest cart after successful addition.
         await fetchCart();
+
         return true;
       }
 
@@ -237,9 +245,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // ==============================
-  // UPDATE QUANTITY
-  // ==============================
+  // ==========================================
+  // UPDATE QUANTITY - OPTIMISTIC UPDATE
+  // ==========================================
 
   const updateQuantity = async (
     productId: string,
@@ -253,13 +261,37 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return removeFromCart(productId);
     }
 
-    try {
-      setLoading(true);
+    // ------------------------------------------
+    // Save previous state for rollback
+    // ------------------------------------------
 
+    const previousItems = cartItems;
+    const previousTotalItems = totalItems;
+    const previousSubtotal = subtotal;
+
+    // ------------------------------------------
+    // Update UI immediately
+    // ------------------------------------------
+
+    const updatedItems = cartItems.map((item) =>
+      item.product._id === productId
+        ? {
+          ...item,
+          quantity,
+        }
+        : item
+    );
+
+    setCartItems(updatedItems);
+    calculateTotals(updatedItems);
+
+    // ------------------------------------------
+    // Send API request in background
+    // ------------------------------------------
+
+    try {
       const res = await fetch(`${API_CART}/${productId}`, {
         method: "PATCH",
-
-        // Send HTTP-only cookie automatically
         credentials: "include",
 
         headers: {
@@ -273,10 +305,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
       const result = await res.json();
 
+      // ------------------------------------------
+      // API SUCCESS
+      // ------------------------------------------
+
       if (res.ok && result.success !== false) {
-        await fetchCart();
+        // Don't call fetchCart().
+        // UI is already updated.
         return true;
       }
+
+      // ------------------------------------------
+      // API FAILURE → ROLLBACK
+      // ------------------------------------------
+
+      setCartItems(previousItems);
+      setTotalItems(previousTotalItems);
+      setSubtotal(previousSubtotal);
 
       if (res.status === 401) {
         alert("Your session has expired. Please log in again.");
@@ -284,18 +329,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
 
       alert(result.message || "Failed to update quantity.");
+
       return false;
     } catch (err) {
       console.error("Update cart quantity error:", err);
+
+      // ------------------------------------------
+      // NETWORK ERROR → ROLLBACK
+      // ------------------------------------------
+
+      setCartItems(previousItems);
+      setTotalItems(previousTotalItems);
+      setSubtotal(previousSubtotal);
+
       return false;
-    } finally {
-      setLoading(false);
     }
   };
 
-  // ==============================
-  // REMOVE FROM CART
-  // ==============================
+  // ==========================================
+  // REMOVE FROM CART - OPTIMISTIC UPDATE
+  // ==========================================
 
   const removeFromCart = async (
     productId: string
@@ -304,22 +357,54 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
 
-    try {
-      setLoading(true);
+    // ------------------------------------------
+    // Save previous state for rollback
+    // ------------------------------------------
 
+    const previousItems = cartItems;
+    const previousTotalItems = totalItems;
+    const previousSubtotal = subtotal;
+
+    // ------------------------------------------
+    // Remove from UI immediately
+    // ------------------------------------------
+
+    const updatedItems = cartItems.filter(
+      (item) => item.product._id !== productId
+    );
+
+    setCartItems(updatedItems);
+    calculateTotals(updatedItems);
+
+    // ------------------------------------------
+    // Send DELETE request in background
+    // ------------------------------------------
+
+    try {
       const res = await fetch(`${API_CART}/${productId}`, {
         method: "DELETE",
-
-        // Send HTTP-only cookie automatically
         credentials: "include",
       });
 
       const result = await res.json();
 
+      // ------------------------------------------
+      // API SUCCESS
+      // ------------------------------------------
+
       if (res.ok && result.success !== false) {
-        await fetchCart();
+        // Don't call fetchCart().
+        // UI is already updated.
         return true;
       }
+
+      // ------------------------------------------
+      // API FAILURE → ROLLBACK
+      // ------------------------------------------
+
+      setCartItems(previousItems);
+      setTotalItems(previousTotalItems);
+      setSubtotal(previousSubtotal);
 
       if (res.status === 401) {
         alert("Your session has expired. Please log in again.");
@@ -327,14 +412,26 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
 
       alert(result.message || "Failed to remove item from cart.");
+
       return false;
     } catch (err) {
       console.error("Remove from cart error:", err);
+
+      // ------------------------------------------
+      // NETWORK ERROR → ROLLBACK
+      // ------------------------------------------
+
+      setCartItems(previousItems);
+      setTotalItems(previousTotalItems);
+      setSubtotal(previousSubtotal);
+
       return false;
-    } finally {
-      setLoading(false);
     }
   };
+
+  // ==========================================
+  // PROVIDER
+  // ==========================================
 
   return (
     <CartContext.Provider
@@ -353,6 +450,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     </CartContext.Provider>
   );
 };
+
+// ==========================================
+// USE CART
+// ==========================================
 
 export const useCart = () => {
   const context = useContext(CartContext);
