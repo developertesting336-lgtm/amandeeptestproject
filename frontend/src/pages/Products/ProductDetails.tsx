@@ -10,7 +10,7 @@ import {
   Sparkles,
   Check,
   Heart,
-  X,
+  // X,
 } from "lucide-react";
 import { useCart } from "../../context/cartContext";
 import { useAuth } from "../../context/authContext";
