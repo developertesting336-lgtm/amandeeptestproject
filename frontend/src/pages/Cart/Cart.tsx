@@ -2,7 +2,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { ShoppingCart, Trash2, ArrowRight, ArrowLeft, Plus, Minus } from "lucide-react";
 import { useCart } from "../../context/cartContext";
 import { useAuth } from "../../context/authContext";
-import toast from "react-hot-toast";
+// import toast from "react-hot-toast";
 
 import Footer from "../Home/footersection";
 import product1 from "../../assets/1.jpeg";
